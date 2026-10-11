@@ -972,7 +972,7 @@ behind each wave are recorded in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ### Removed
 - Dead legacy Calibre Flathub ID (`com.calibredesk.calibre`) from the app's
   launch chain — a branch that could never match (N-05).
-- Hardcoded developer username (`"aryan"`) heuristics from all scripts,
+- Hardcoded developer username heuristics from all scripts,
   replaced by structural path-prefix detection (F-03).
 - Four pre-existing dead `PROJECT_ROOT` variable declarations that would have
   failed the tightened ShellCheck gate (SC2034).

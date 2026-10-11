@@ -37,7 +37,7 @@ Only the current release branch on `main` receives security updates.
 
 If you discover a security vulnerability, please disclose it responsibly:
 
-1. **Preferred Method**: Submit a report via [GitHub Private Vulnerability Reporting](https://github.com/aryansinghnagar/Scriptorium/security/advisories/new).
+1. **Preferred Method**: Submit a report via [GitHub Private Vulnerability Reporting](https://github.com/ars-arcanum/scriptorium/security/advisories/new).
 2. **Alternative Method**: Email the project maintainers with the subject tag `[SECURITY: Ars Arcanum]`.
 
 ### Response Timeline (SLA)

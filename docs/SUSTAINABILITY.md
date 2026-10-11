@@ -19,7 +19,7 @@ Ars Arcanum was created to free fiction authors from predatory subscriptions and
 Financial contributions directly fund development, maintenance, security audits, and packaging infrastructure:
 
 ### 2.1 Individual Recurring Sponsorships
-- **GitHub Sponsors**: [github.com/sponsors/aryansinghnagar](https://github.com/sponsors/aryansinghnagar)
+- **GitHub Sponsors**: [github.com/sponsors/ars-arcanum](https://github.com/sponsors/ars-arcanum)
 - **Open Collective**: `opencollective.com/ars-arcanum`
 
 ### 2.2 Community Grant Programs & Foundations

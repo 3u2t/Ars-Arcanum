@@ -38,7 +38,7 @@ within this table:
 
 ```bash
 # Clone the repository
-git clone https://github.com/aryansinghnagar/Ars-Arcanum.git
+git clone https://github.com/ars-arcanum/Ars-Arcanum.git
 cd Ars-Arcanum
 
 # Install package in editable mode

@@ -58,7 +58,7 @@ This guide will walk you from a fresh installation to a fully working authoring 
 Clone the repository to your computer:
 
 ```bash
-git clone https://github.com/aryansinghnagar/Ars-Arcanum.git
+git clone https://github.com/ars-arcanum/Ars-Arcanum.git
 cd Ars-Arcanum
 ```
 

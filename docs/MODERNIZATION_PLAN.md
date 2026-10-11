@@ -1,7 +1,7 @@
 # Ars Arcanum (Scriptorium) — Comprehensive Modernization & Refactoring Plan
 > **Target Architecture**: External Tools/Plugins + Python + HTML/CSS/JavaScript/Django/React + Shell + Linux Stack  
 > **Operational Framework**: Multi-Scale Fractal Altitude Operations & Deterministic Safety Ladder  
-> **Release Version**: `v0.1.0` $\to$ `v0.2.0` Modernization Track | **Repository**: `https://github.com/aryansinghnagar/Ars-Arcanum.git`
+> **Release Version**: `v0.1.0` $\to$ `v0.2.0` Modernization Track | **Repository**: `https://github.com/ars-arcanum/Ars-Arcanum.git`
 
 ---
 

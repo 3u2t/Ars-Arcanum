@@ -131,14 +131,14 @@ diagnostics:
 
 **Linux / macOS:**
 ```bash
-git clone https://github.com/aryansinghnagar/Ars-Arcanum.git Ars-Arcanum
+git clone https://github.com/ars-arcanum/Ars-Arcanum.git Ars-Arcanum
 cd Ars-Arcanum
 bash scripts/setup_arcanum.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-git clone https://github.com/aryansinghnagar/Ars-Arcanum.git Ars-Arcanum
+git clone https://github.com/ars-arcanum/Ars-Arcanum.git Ars-Arcanum
 cd Ars-Arcanum
 powershell -ExecutionPolicy Bypass -File scripts\setup_arcanum.ps1
 ```

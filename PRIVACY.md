@@ -2,7 +2,7 @@
 
 **Last Updated:** September 2026  
 **Project:** Ars Arcanum  
-**Repository:** https://github.com/aryansinghnagar/Scriptorium
+**Repository:** https://github.com/ars-arcanum/scriptorium
 
 ---
 
@@ -61,7 +61,7 @@ The diagnostic toolchain (`arcanum doctor` / `scripts/world_doctor.sh`):
 ## 5. Security & Vulnerability Disclosures
 
 Security inquiries and vulnerability reports are managed without exposing personal maintainer or contributor private details. Please report security issues via:
-- **GitHub Private Vulnerability Advisories:** [https://github.com/aryansinghnagar/Scriptorium/security/advisories/new](https://github.com/aryansinghnagar/Scriptorium/security/advisories/new)
+- **GitHub Private Vulnerability Advisories:** [https://github.com/ars-arcanum/scriptorium/security/advisories/new](https://github.com/ars-arcanum/scriptorium/security/advisories/new)
 
 ---
 

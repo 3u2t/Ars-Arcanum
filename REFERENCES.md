@@ -1,7 +1,7 @@
 # References, Creator Attributions & Asset Provenance
 
 **Project:** Ars Arcanum  
-**Maintainers:** Aryan Singh Nagar ([Security Advisories](https://github.com/aryansinghnagar/Scriptorium/security/advisories))  
+**Maintainers:** Ars Arcanum Maintainers ([Security Advisories](https://github.com/ars-arcanum/scriptorium/security/advisories))  
 **License Policy:** Open-Source (GPL-3.0 / MIT / OFL / CC-BY-SA)
 
 ---

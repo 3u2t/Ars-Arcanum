@@ -1,15 +1,14 @@
 # Ars Arcanum code owners (GOV-01: require review on security-sensitive paths
 # once multi-maintainer workflow is active; branch protection itself is
 # enabled in GitHub Settings: main = protected, CI required, no force-push).
-# Replace @aryansinghnagar with the maintainer team handle when available.
 
-* @aryansinghnagar
-/scripts/restore_world.sh @aryansinghnagar
-/scripts/backup_world.sh @aryansinghnagar
-/scripts/setup_arcanum.sh @aryansinghnagar
-/scripts/lib/worlds.sh @aryansinghnagar
-/scripts/lib/continuity.py @aryansinghnagar
-/scripts/lib/cache.py @aryansinghnagar
-debian/ @aryansinghnagar
-org.arsarcanum.ArsArcanum.yaml @aryansinghnagar
-.github/workflows/ @aryansinghnagar
+* @ars-arcanum/maintainers
+/scripts/restore_world.sh @ars-arcanum/maintainers
+/scripts/backup_world.sh @ars-arcanum/maintainers
+/scripts/setup_arcanum.sh @ars-arcanum/maintainers
+/scripts/lib/worlds.sh @ars-arcanum/maintainers
+/scripts/lib/continuity.py @ars-arcanum/maintainers
+/scripts/lib/cache.py @ars-arcanum/maintainers
+debian/ @ars-arcanum/maintainers
+org.arsarcanum.ArsArcanum.yaml @ars-arcanum/maintainers
+.github/workflows/ @ars-arcanum/maintainers

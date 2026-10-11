@@ -28,7 +28,7 @@ flowchart TD
 ### 2.1 Project Lead (BDFL)
 - Holds final decision-making authority in deadlocked architectural disputes.
 - Sets high-level strategic roadmap, release tags, and security advisory disclosures.
-- Current Lead: **Aryan Singh Nagar** (`@aryansinghnagar`).
+- Current Lead: **Ars Arcanum Project Lead** (`@ars-arcanum`).
 
 ### 2.2 Core Maintainers
 - Review and merge pull requests across the codebase.

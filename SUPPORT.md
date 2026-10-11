@@ -18,9 +18,9 @@ Thank you for using Ars Arcanum! This document outlines our support policy, comm
 
 1. **Author Manual & Docs**: Check the comprehensive [Author Manual](docs/AUTHOR_MANUAL.md) and [Architecture Documentation](docs/ARCHITECTURE.md).
 2. **Built-in Diagnostics**: Run `arcanum doctor` or `arcanum doctor --report` to diagnose your installation, toolchain dependencies, and manuscript integrity.
-3. **Bug Reports**: If you discover a defect, submit a [Bug Report](https://github.com/aryansinghnagar/Scriptorium/issues/new?template=bug_report.yml) with your diagnostic report.
-4. **Feature Proposals**: Submit ideas via [Feature Requests](https://github.com/aryansinghnagar/Scriptorium/issues/new?template=feature_request.yml).
-5. **Security Vulnerabilities**: Report security issues privately via [GitHub Private Vulnerability Reporting](https://github.com/aryansinghnagar/Scriptorium/security/advisories/new).
+3. **Bug Reports**: If you discover a defect, submit a [Bug Report](https://github.com/ars-arcanum/scriptorium/issues/new?template=bug_report.yml) with your diagnostic report.
+4. **Feature Proposals**: Submit ideas via [Feature Requests](https://github.com/ars-arcanum/scriptorium/issues/new?template=feature_request.yml).
+5. **Security Vulnerabilities**: Report security issues privately via [GitHub Private Vulnerability Reporting](https://github.com/ars-arcanum/scriptorium/security/advisories/new).
 
 ---
 

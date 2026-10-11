@@ -31,7 +31,7 @@
 ### Title Page
 # THE ASH AND THE INK
 ### Book I of the Silver Chronicles
-**A Novel by Aryan Singh Nagar**
+**A Novel by [Author Name]**
 *Ars Arcanum Press — Sovereign Edition*
 
 ---
@@ -39,7 +39,7 @@
 ### Copyright Notice
 ```
 The Ash and the Ink
-Copyright © 2026 by Aryan Singh Nagar. All rights reserved.
+Copyright © 2026 by [Author Name]. All rights reserved.
 
 This is an educational demonstration manuscript template produced within 
 the Ars Arcanum Sovereign Authoring Operating System. 
@@ -80,4 +80,4 @@ Gratitude to the offline open-source sovereign authoring movement for preserving
 ---
 
 ### About the Author
-Aryan Singh Nagar is a speculative fiction architect and software craftsman dedicated to sovereign, deterministic worldbuilding systems.
+[Author Name] is a speculative fiction architect and software craftsman dedicated to sovereign, deterministic worldbuilding systems.

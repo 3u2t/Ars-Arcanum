@@ -2,7 +2,7 @@
 
 > **Sovereign Local-First Authoring Operating System & Craft Studio (GPA 4.0/4.0 — Grade A+)**  
 > *Authoritative Onboarding Reference, System Blueprint & Verification Baseline*  
-> **Release Version**: `v0.1.0` | **Quality Grade**: `Grade A+ (GPA 4.0/4.0)` | **Repository**: `https://github.com/aryansinghnagar/Ars-Arcanum.git`
+> **Release Version**: `v0.1.0` | **Quality Grade**: `Grade A+ (GPA 4.0/4.0)` | **Repository**: `https://github.com/ars-arcanum/Ars-Arcanum.git`
 
 ---
 
@@ -190,7 +190,7 @@ All prose manuscripts, character dossiers, lore bibles, and timelines are stored
 
 | Attribute | Value | Source / Evidence |
 |:---|:---|:---|
-| **Repository Remote** | `https://github.com/aryansinghnagar/Ars-Arcanum.git` | `git remote -v` |
+| **Repository Remote** | `https://github.com/ars-arcanum/Ars-Arcanum.git` | `git remote -v` |
 | **Active Branch** | `main` | `git branch --show-current` |
 | **Software Version** | `0.1.0` (Sovereign Release) | [`pyproject.toml#L7`](file:///pyproject.toml#L7), [`scripts/lib/_bootstrap.py#L20`](file:///scripts/lib/_bootstrap.py#L20) |
 | **License** | MIT License | [`LICENSE`](file:///LICENSE), [`pyproject.toml`](file:///pyproject.toml) |
