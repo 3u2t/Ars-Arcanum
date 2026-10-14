@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from scripts.lib.audit_hardening import (
+    import_polyglot_lexicon_hardened,
+    run_lite_continuity_check,
+)
 from scripts.lib.conlang_linter import (
     ConlangLexeme,
     PhonotacticSpec,
@@ -54,6 +58,8 @@ __all__ = [
     "compile_glossary_markdown",
     "compute_relativistic_proper_days",
     "import_polyglot_lexicon",
+    "import_polyglot_lexicon_hardened",
     "render_obsidian_diagnostics_markdown",
     "run_full_vault_continuity_suite",
+    "run_lite_continuity_check",
 ]

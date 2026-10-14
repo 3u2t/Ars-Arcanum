@@ -1,9 +1,9 @@
-# 🖊️ Ars Arcanum — Sovereign Authoring Operating System & Craft Studio
+# 🖋️ Ars Arcanum – Sovereign Authoring Operating System & Craft Studio
 
-[![Release](https://img.shields.io/badge/Release-v0.1.0-amber)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![Release](https://img.shields.io/badge/Release-v0.2.0--amber)](https://github.com/aryansinghnagar/Ars-Arcanum)
 [![Status](https://img.shields.io/badge/Status-Sovereign_Studio-emerald)](https://github.com/aryansinghnagar/Ars-Arcanum)
-[![Tests](https://img.shields.io/badge/Tests-507_Passing_(100%25)-brightgreen)](https://github.com/aryansinghnagar/Ars-Arcanum/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-%E2%89%A580%25-blue)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![Tests](https://img.shields.io/badge/Tests-520%2B_Passing_(100%25)-brightgreen)](https://github.com/aryansinghnagar/Ars-Arcanum/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-%E2%89%A589%25-blue)](https://github.com/aryansinghnagar/Ars-Arcanum)
 [![License](https://img.shields.io/badge/License-MIT-purple)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-Zero--Pip_(100%25_Stdlib)-orange)](pyproject.toml)
 
@@ -17,11 +17,14 @@
 4. **Three-Subsystem Epistemic Safety ([ADR-0001](docs/adr/0001-demotion-of-normative-evaluators-and-three-subsystem-epistemic-safety.md))**:
    - **Subsystem 1 (Deterministic Invariants & Continuity Compilers)**: Atomic file writes, cross-platform locks, schema validation, POV epistemic firewalls (`EPI-*`), timeline/route physics (`TIME-*`), conlang phonotactics (`CON-*`), and resource conservation ledgers (`LED-*`).
    - **Subsystem 2 (Descriptive Telemetry & Craft Analytics)**: Phase-Aware Effort Multipliers, word/dialogue/CJK telemetry, SHA-256 paragraph-hash diffing, revision heatmaps (`REV-*`), and multi-POV narrative braid matrices (`BRD-*`).
-   - **Subsystem 3 (Authorial Governance & Obsidian Integration)**: 3-tier `constitution.yaml` cascade (`!RULE_ID` negation), 32 pre-configured offline Obsidian plugins, and live `_Arcanum_Diagnostics.md` callout dashboards.
+   - **Subsystem 3 (Authorial Governance & Obsidian Integration)**: 3-tier `constitution.yaml` cascade (`!RULE_ID` negation), 5-plugin **Lite Mode** profile (`lite_profile.json`) or 32-plugin Full Studio, and live `_Arcanum_Diagnostics.md` callout dashboards.
 
 ## ⚡ Quick Start & Core CLI Workflows
 
 ```bash
+# 0. One-Command Obsidian Lite Mode (Runs the 4 flagship compilers + 5-plugin Lite profile)
+python scripts/arcanum-lite ~/Universes/Reliquary/
+
 # 1. Unified Continuity Suite & Live Obsidian Dashboard (_Arcanum_Diagnostics.md)
 python scripts/arcanum continuity-suite ~/Universes/Reliquary/
 
@@ -59,10 +62,12 @@ python scripts/arcanum backup --tag milestone-1
 
 | Guide / Reference Manual | Primary Focus |
 | :--- | :--- |
+| [3-Tier Documentation Index (`docs/INDEX.md`)](docs/INDEX.md) | Organized map of all 70+ manuals across Quickstart, Author Craft, and Internals |
+| [Obsidian Lite Mode (`docs/LITE_MODE.md`)](docs/LITE_MODE.md) | Zero-friction 4-compiler + 5-plugin workflow for novelists |
 | [Start Here (`docs/START_HERE.md`)](docs/START_HERE.md) | 15-minute onboarding tour from vault scaffolding to first sprint |
 | [Author Manual (`docs/AUTHOR_MANUAL.md`)](docs/AUTHOR_MANUAL.md) | Complete day-to-day workflow guide for novelists and worldbuilders |
 | [CLI Cheatsheet (`docs/CHEATSHEET.md`)](docs/CHEATSHEET.md) | Fast command reference for all core, continuity, and publishing engines |
 | [System Architecture (`docs/ARCHITECTURE.md`)](docs/ARCHITECTURE.md) | Master blueprint of the 3-subsystem model, DAL caching, and security bounds |
-| [Modernization Plan (`docs/MODERNIZATION_PLAN.md`)](docs/MODERNIZATION_PLAN.md) | Phases 1–4 architectural refactoring and continuity compiler specifications |
+| [Modernization Plan (`docs/MODERNIZATION_PLAN.md`)](docs/MODERNIZATION_PLAN.md) | Phases 1-5 architectural refactoring and continuity compiler specifications |
 | [Agentic Manifesto (`AGENTS.md`)](AGENTS.md) | Invariant engineering contracts, security guarantees, and momentum queues |
 | [Threat Model (`docs/THREAT_MODEL.md`)](docs/THREAT_MODEL.md) | STRIDE-Lite security analysis, subprocess sandboxing, and CSP enforcement |

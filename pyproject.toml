@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ars-arcanum"
-version = "0.1.0"
+version = "0.2.0"
 description = "Sovereign local-first authoring platform and speculative worldbuilding craft studio"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,6 +12,7 @@ requires-python = ">=3.10"
 [project.scripts]
 arcanum = "scripts.lib.cli:main"
 ars-arcanum = "scripts.lib.cli:main"
+arcanum-lite = "src.arcanum.cli_bridge:main_lite"
 
 [tool.setuptools.packages.find]
 where = [".", "src"]
@@ -45,6 +46,10 @@ ignore = [
 "scripts/init_query.py" = ["W291"]
 "scripts/lib/conlang_linter.py" = ["S314"]
 "scripts/lib/docx_tracked_changes.py" = ["S314"]
+"scripts/lib/audit_hardening.py" = ["S314", "I001"]
+"scripts/apply_arcanum_upgrade.py" = ["I001"]
+"scripts/arcanum-lite" = ["I001"]
+"src/arcanum/*" = ["I001"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 40
