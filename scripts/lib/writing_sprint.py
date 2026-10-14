@@ -559,8 +559,18 @@ def format_stats_markdown(vel: dict[str, Any], title: str = "Manuscript") -> str
 
 
 def main(argv: list[str] | None = None) -> int:
+    if argv and argv[0] == "effort":
+        try:
+            from lib.phase_effort_engine import main as effort_main
+        except ImportError:
+            from scripts.lib.phase_effort_engine import main as effort_main
+        return effort_main(argv[1:])
+
     parser = argparse.ArgumentParser(description="Ars Arcanum Writing Sprint & Cognitive Velocity Engine")
     subparsers = parser.add_subparsers(dest="command", help="Sprint sub-command")
+
+    # effort
+    subparsers.add_parser("effort", help="Log a phase-weighted writing session and evaluate daily effort points")
 
     # start
     p_start = subparsers.add_parser("start", help="Start a new writing sprint session")

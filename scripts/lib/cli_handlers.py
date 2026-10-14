@@ -108,6 +108,7 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "words": ("module", "lib.word_counter"), "wordcount": ("module", "lib.word_counter"),
     "report": ("module", "lib.word_counter"), "count": ("module", "lib.word_counter"),
     "sprint": ("module", "lib.writing_sprint"), "writing-sprint": ("module", "lib.writing_sprint"),
+    "sprint-effort": ("module", "lib.phase_effort_engine"), "effort": ("module", "lib.phase_effort_engine"),
     "velocity": ("module", "lib.writing_sprint", "stats"),
 
     # --- Retained Core Engines: Revision & Editorial ---
@@ -117,6 +118,7 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "revision-heatmap": ("module", "lib.revision_heatmap"), "churn": ("module", "lib.revision_heatmap"),
     "revision-density": ("module", "lib.revision_heatmap"), "draft-churn": ("module", "lib.revision_heatmap"),
     "heatmap": ("module", "lib.revision_heatmap"),
+    "braid": ("module", "lib.narrative_braid"), "narrative-braid": ("module", "lib.narrative_braid"),
 
     # --- Retained Core Engines: Portfolio & Word Processing ---
     "portfolio": ("module", "lib.portfolio"), "catalog": ("module", "lib.portfolio"),
@@ -206,6 +208,10 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "sim": ("handler", "pruned_tactical"), "tactical-sim": ("handler", "pruned_tactical"),
     "battle": ("handler", "pruned_tactical"), "combat": ("handler", "pruned_tactical"),
     "magic": ("handler", "pruned_magic"), "magic-check": ("handler", "pruned_magic"),
+    "conlang-check": ("module", "lib.conlang_linter"), "conlang-linter": ("module", "lib.conlang_linter"),
+    "timeline-audit": ("module", "lib.timeline_solver"), "timeline-solver": ("module", "lib.timeline_solver"),
+    "ledger-audit": ("module", "lib.resource_ledger"), "resource-ledger": ("module", "lib.resource_ledger"),
+    "validate-epistemic": ("module", "lib.epistemic_firewall"), "epistemic": ("module", "lib.epistemic_firewall"),
     "continuity": ("handler", "pruned_continuity"), "check-continuity": ("handler", "pruned_continuity"),
     "series": ("handler", "pruned_series"), "series-continuity": ("handler", "pruned_series"),
     "ledger": ("handler", "pruned_series"),
@@ -295,3 +301,13 @@ __all__ = [
     "_handle_tool",
     "build_handlers_map",
 ]
+
+# === ARS ARCANUM UPGRADE PACK DISPATCHERS ===
+UPGRADE_COMMAND_HANDLERS = {
+    "sprint-effort": "scripts.lib.phase_effort_engine:main",
+    "validate-epistemic": "scripts.lib.epistemic_firewall:audit_epistemic_continuity",
+    "timeline-audit": "scripts.lib.timeline_solver:audit_timeline_and_routes",
+    "conlang-check": "scripts.lib.conlang_linter:audit_conlang_terms",
+    "ledger-audit": "scripts.lib.resource_ledger:audit_resource_conservation",
+    "braid": "scripts.lib.narrative_braid:render_braid_html",
+}
