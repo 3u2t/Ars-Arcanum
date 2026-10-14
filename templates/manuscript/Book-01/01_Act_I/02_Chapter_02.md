@@ -1,34 +1,51 @@
-# Chapter 2: The Crossing
+---
+chapter: 2
+title: "Chapter Two — The Road Beyond the Spire"
+pov: "Deuteragonist"
+location: "Frontier Outpost"
+year: 1001
+month: 1
+day: 5
+travel_mode: "horse_mounted"
+subplots:
+  - "Frontier Mystery"
+tension: 7
+references:
+  - "inciting_incident_secret"
+state_delta:
+  mana_reserve: -5
+---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-@pov: Kaelen
-@char: Kaelen, Master Vance, Ferryman
-@location: High Pass River Crossing
-@time: 1248-04-16 02:15 (Night)
-@narrative_day: Day 2
-@thread: Main-Plot-Conspiracy, Subplot-Ancient-Order
-@scene: Goal-Escape-City, Conflict-Swollen-River-Current, Disaster-Shoreline-Severed
-@pacing: High-Tension
-@status: Draft
+@pov: Deuteragonist
+@location: Frontier Outpost
+@subplot: Frontier Mystery
+@tension: 7
 
-> [!NOTE] ⚠️ EDUCATIONAL TEMPLATE (AI-GENERATED)
-> **Notice**: This template was AI-generated for educational demonstration and craft guidance within the Ars Arcanum operating system. It is strictly non-commercial and provided solely to demonstrate system features, mechanical schemas, and engine capabilities. Authors should replace placeholder values with their original manuscript prose.
+# Chapter 2: The Road Beyond the Spire
 
 <details>
-<summary>💡 <b>Ars Arcanum Engine Guidance & Feature Breakdown (Click to Expand)</b></summary>
+<summary><strong>🧵 Multi-POV Narrative Braid &amp; CriticMarkup Sync (`arcanum braid` &amp; `arcanum docx-tracked`)</strong></summary>
 
-### Features Demonstrated in This Chapter:
-- **Narrative Structure & Threshold Crossing**: `structure` (`arcanum structure`) — Represents the **Act I Crossing the First Threshold** (20%–25%), marking the irreversible point of no return where the protagonist enters the dangerous "Special World."
-- **Travel & Logistics Integration**: `journey` (`arcanum journey`) — Demonstrates river crossing friction, night march pace, and terrain encumbrance along the [[Locations/Cartography-Route-Template|High-Pass-Road]].
-- **Character Voice & Polarity**: `voice` (`arcanum voice`) — Contrasts Vance's weary, breathless warnings with Kaelen's terse, analytical resolve.
-- **Micro-Pacing & Sentence Variety**: `pacing` (`arcanum pacing`) — Features rapid sentence fragments during danger transitions, slowing into lyrical sensory prose as the barge drifts into the fog.
+- Switching `@pov:` to `Deuteragonist` populates a second swimlane in `arcanum braid --html`.
+- You can use inline CriticMarkup like `{++added words++}`, `{--removed words--}`, and `{>>Editor note<<}` and round-trip them to Microsoft Word Tracked Changes via `arcanum docx-tracked`.
+
 </details>
 
-The river was a swollen, black torrent churning beneath the midnight fog. Behind them, the spires of High Sanctuary burned with a sickly cerulean glare—unnatural aetheric fire consuming three centuries of archival history, vomiting plumes of white smoke that blotted out the constellation of the Radiant Falcon.
+Four days along the ridge brought the patrol to [[Frontier-Outpost]], where the beacon fires burned low against the dusk.
 
-“Keep your head beneath the gunwale,” Vance whispered, throwing a coarse wool blanket over Kaelen’s trembling shoulders. The archivist’s breathing was shallow and ragged; a dark red stain seeped through his linen tunic where an inquisitor’s crossbow bolt had grazed his ribs during the descent through the flumes.
+<!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->
+<details>
+<summary><strong>⚙️ Ars Arcanum Deterministic Engine &amp; Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
 
-The ferryman took the heavy [[Economies/Economy-Template|Valdorian Silver Sovereign]] without a word, his leathery knuckles straining on the steering oar as he shoved the flat-bottomed wooden barge into the icy current. Glacial runoff sprayed over the bow, freezing instantly on the gunwales.
+### How the CLI Compilers &amp; Craft Engines Use This Template
+- **Unified VaultIndex (`arcanum vault-index`)**: Indexes YAML frontmatter (including `|` and `>` multiline block scalars), `@directives`, `[[Wikilinks]]`, multi-paragraph dialogue ratios, and SHA-256 paragraph hashes (`CACHE_VERSION = 3`).
+- **Epistemic POV Firewall (`arcanum validate-epistemic`)**: Compares character `knows:` baselines against chapter `learns:` and `references:` (`EPI-201..203`).
+- **Planetary Calendar &amp; Route Solver (`arcanum timeline-audit`)**: Audits `world.yaml` month lengths and `Locations/` route distances (`TIME-301..302`).
+- **PolyGlot Conlang Linter (`arcanum conlang-check`)**: Validates lexicon terms and phonotactics (`CON-401..402`).
+- **Resource Conservation Ledger (`arcanum ledger-audit`)**: Audits `resource_pools` and chapter `state_delta` transitions (`LED-501..502`).
+- **Multi-POV Narrative Braid (`arcanum braid`)**: Tracks POV word shares, tension curves, and drought alerts (`BRD-601`).
+- **Phase-Aware Effort (`arcanum sprint-effort`)**: Weights First Draft (`1.00x`), On-Phase Outline (`1.00x`), Worldbuilding (`0.50x`), Revision (`0.20x`), and blocks premature editing during Drafting (`0.00x`).
+- **Live Obsidian Bridge (`arcanum continuity-suite`)**: Generates `_Arcanum_Diagnostics.md` inside your vault root.
 
-Kaelen pressed the wax-sealed leather cylinder against his ribs. Inside lay the parchment Vance had risked his life to extract—the true celestial coordinates of the First Sunder. Every instinct screamed at Kaelen to demand they turn back, to return to the orderly monastery library and the only life he had ever known. But as the torchlit battlements of the city dissolved into the freezing mountain mist, he understood with absolute, bitter clarity that his old life had turned to smoke.
-
-Across the water, the dark jagged silhouette of the [[Locations/Location-Template|Aethelgard-Highlands]] waited in the shadows.
+</details>

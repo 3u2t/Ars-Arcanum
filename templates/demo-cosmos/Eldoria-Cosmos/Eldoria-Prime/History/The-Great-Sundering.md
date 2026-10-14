@@ -1,15 +1,20 @@
 ---
-name: "The Great Sundering"
-aliases:
-  - "The Shattering of Spires"
-type: "timeline_event"
-era: "1E"
-start_year: 1240
-end_year: 1242
-location: "[[High-Sanctuary]]"
-significance: "Cataclysmic fracture of the celestial leylines."
+title: "The Great Sundering — Causal DAG & Historical Epoch"
+type: "history"
+fact_id: "sundering_true_cause"
+year: 1
+month: 1
+day: 1
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# The Great Sundering
+# 📜 The Great Sundering — Historical Timeline & Causal Graph (`docs/CAUSALITY.md`)
 
-The epochal crisis wherein rogue resonance weavers destabilized the central spire of [[High-Sanctuary]], fracturing the continent into floating sky islands.
+<details>
+<summary><strong>⏳ Causal Chain &amp; Epistemic Secret (`sundering_true_cause`)</strong></summary>
+
+Marks Year 1 of the Eldorian Celestial Reckoning when the continental plates fractured.
+
+</details>
+
+The cataclysm that raised [[High-Sanctuary]] above [[Whispering-Vale]].

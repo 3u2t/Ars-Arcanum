@@ -1,14 +1,19 @@
 ---
 name: "Whispering Vale"
-aliases:
-  - "The Valley of Echoes"
+title: "Whispering Vale — The Sunken Mist-Basin"
 type: "location"
-dominant_faction: "[[Order-of-the-Silver-Dawn]]"
-climate: "Temperate Forest"
-terrain: "Forested Basin"
-status: "settled"
+biome: "Bioluminescent Temperate Rainforest"
+elevation_m: 350
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# Whispering Vale
+# 🌲 Whispering Vale — Ecological Basin & Lore Anchor
 
-A dense highland valley flanked by crystalline peaks, commanded by [[Lord-Kaelen]]. Known for natural aetheric resonance springs.
+<details>
+<summary><strong>🌿 Biome &amp; Acoustic Ecology Notes (`docs/ECOLOGY.md` &amp; `docs/AMBIENT.md`)</strong></summary>
+
+Beneath the floating shadow of [[High-Sanctuary]], the Whispering Vale harbors wild aether-spores and ancient ruins from [[The-Great-Sundering]].
+
+</details>
+
+A dense, mist-shrouded valley connected to [[High-Sanctuary]] along the 120 km [[Sky-Bridge-Route]].

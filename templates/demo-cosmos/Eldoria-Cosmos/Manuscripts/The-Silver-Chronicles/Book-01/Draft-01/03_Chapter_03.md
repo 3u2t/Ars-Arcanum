@@ -1,22 +1,36 @@
 ---
-title: "Harmonic Weaving"
 chapter: 3
-pov: "[[Aeloria-Vael]]"
-focus: "[[Aether-Weaving]]"
+title: "Convergence at the Sunken Gate"
+pov: "Aeloria Vael"
+location: "Whispering Vale"
+year: 1042
+month: 1
+day: 6
+travel_mode: "horse_mounted"
+subplots:
+  - "Spire Defense"
+  - "Frontier Patrol"
+  - "Aether Depletion Mystery"
+tension: 9
+references:
+  - "vale_beacon_signal"
+  - "aether_basic_cadence"
+  - "theron_betrayal_cipher"
+learns:
+  - "theron_betrayal_cipher"
+state_delta:
+  aether_vials: -2
+  stamina_reserve: -30
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# Chapter 3: Harmonic Weaving
+@pov: Aeloria Vael
+@location: Whispering Vale
+@subplot: Aether Depletion Mystery
+@tension: 9
 
-@pov: Aeloria-Vael
-@character: Lord-Kaelen, Archmage-Theron
-@location: Whispering-Vale
+# Chapter 3: Convergence at the Sunken Gate
 
-Deep within the subterranean cavern beneath the [[Whispering-Vale]], the ancient rift pulsed with violet light.
+Five days of hard riding down the switchbacks of the [[Sky-Bridge-Route]] brought [[Aeloria-Vael]] into the mist-canopy of [[Whispering-Vale]], where [[Lord-Kaelen]] waited beside the dormant siphon.
 
-Aeloria knelt before the glowing fissure. She closed her eyes, centering her breath as Archmage [[Archmage-Theron]] had taught her during the dark years following [[The-Great-Sundering]].
-
-*Feel the frequency. Do not force the flow; harmonize with it.*
-
-She drew upon [[Aether-Weaving]], channeling the cool current from the crystals into her blade. The hum of resonance filled the cavern, sealing the fractures one by one.
-
-"Hold the ward!" [[Lord-Kaelen]] roared from the tunnel entrance. "The order stands with you!"
+"Read the cipher yourself, Aeloria," Kaelen said, handing her the wax-sealed dispatch. "The spire is not stabilizing the valley—it is draining it."

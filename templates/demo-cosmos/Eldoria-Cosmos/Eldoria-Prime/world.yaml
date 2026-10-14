@@ -1,8 +1,17 @@
-# Ars Arcanum World Lore Vault Manifest
+# =============================================================================
+# ARS ARCANUM — WORLD BIBLE MANIFEST & PLANETARY AXIOMS (world.yaml)
+# =============================================================================
 schema_version: "1.0"
 name: "Eldoria-Prime"
+type: "world"
 universe: "Eldoria-Cosmos"
 created_at: "2026-09-21"
 description: "World Lore Vault for the floating continent realm of Eldoria."
 genre: "High Fantasy / Speculative"
 canon_level: "Tier-1"
+calendar_name: "Eldorian Celestial Reckoning"
+month_lengths: [36, 36, 36, 36, 36, 36, 36, 36, 36, 36]
+settings:
+  gravity_g: 0.92
+  axial_tilt_deg: 21.5
+  primary_conlang: "High Eldorian"

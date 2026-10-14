@@ -1,108 +1,34 @@
 ---
-type: guide
-tags:
-  - meta/guide
-  - meta/start
+title: "00 START HERE — Sovereign World Bible & Continuity Studio Guide"
+schema_version: "1.0"
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# 🚀 Start Here: The Sovereign World Bible & Ars Arcanum Craft Ecosystem
-
-Welcome to your **Ars Arcanum World Bible**! This sovereign lore vault is designed to connect seamlessly with your manuscript, your command-line craft engines, and your Obsidian drafting environment.
-
-> [!NOTE] ⚠️ EDUCATIONAL TEMPLATE (AI-GENERATED)
-> **Notice**: This template was AI-generated for educational demonstration and craft guidance within the Ars Arcanum operating system. It is strictly for educational purposes and is not meant to be used for commercial purposes. Authors should replace all placeholder content with their own original creative worldbuilding and manuscript prose.
+# 🏛️ Ars Arcanum Sovereign World Bible — Complete Feature & Craft Guide
 
 <details>
-<summary>💡 <b>Ars Arcanum Engine Guidance & Feature Breakdown (Click to Expand)</b></summary>
+<summary><strong>🧭 Complete Engine &amp; Craft Doctrine Walkthrough (Click to Expand)</strong></summary>
 
-### Features Demonstrated in This Ecosystem:
-- **Core Lore Validation**: `world_doctor` (`arcanum doctor World-Bible/`) — Audits your vault for broken wikilinks, orphan notes, timeline contradictions, and missing frontmatter schemas.
-- **Dynamic Craft Wisdom**: `tips` (`arcanum tip`) — Ambiently provides non-obvious masterclass craft advice tailored to your active worldbuilding domain.
-- **Local Semantic Retrieval**: `local_rag` & `corpus_export` (`arcanum rag`, `arcanum corpus`) — Index your lore notes into offline TF-IDF and SQLite FTS5 vectors for sovereign search and local LLM context feeding.
-- **Single-File Wiki Publishing**: `codex_export` (`arcanum codex <WorldDir> --html`) — Compiles your entire world into a standalone offline HTML encyclopedia with interactive spoiler shields.
-- **Cross-Domain Knowledge Mesh**: `resonance` (`arcanum resonance mesh`) — Maps connections between your celestial physics, languages, factions, magic systems, and manuscript scenes.
-- **Obsidian Community Plugins (32 Plugins Pre-Configured)**: Seamless integration with Dataview, Calendarium, Leaflet, Metadata Menu, Charted Roots, Rootweave, LanguageForge, Commentator, Sentence Rhythm, Longform, Noveler, Writing Goals, Typewriter Mode, and more.
+1. **Epistemic POV &amp; Spoiler Firewall (`arcanum validate-epistemic` — `EPI-201..203`)**: Declare `knows: [fact_id]` in `Characters/*.md` and `learns: [fact_id]` / `references: [fact_id]` in manuscript chapters.
+2. **Custom Planetary Calendars &amp; Travel Physics (`arcanum timeline-audit` — `TIME-301..302`)**: Declare `calendar_name` and `month_lengths` in `world.yaml` and route `origin`, `destination`, `distance_km`, and `terrain` in `Locations/`.
+3. **PolyGlot Conlang &amp; Phonotactic Linter (`arcanum conlang-check` — `CON-401..402`)**: Store `.pgd` / `.xml` lexicons and phoneme inventories in `Languages/`.
+4. **Hard Magic &amp; Sci-Fi Resource Conservation (`arcanum ledger-audit` — `LED-501..502`)**: Declare `resource_pools` in `Characters/` or `Artifacts/` and track expenditures via `state_delta` in chapters.
+5. **Phase-Aware Effort &amp; Career Velocity (`arcanum sprint-effort`)**: Track daily progress across all 9 lifecycle stages (`1.00x` Draft/On-Phase Outline, `0.50x` Lore, `0.20x` Revision, `0.00x` premature editing block during Drafting).
 
-### How to Use the Templates for Your Projects:
-1. **Never worldbuild to procrastinate**: Start with the 3-Step Quickstart below. Only flesh out lore categories as your story demands them.
-2. **Preserve Frontmatter Structure**: The YAML frontmatter (`---`) at the top of each note powers the CLI craft calculations, Dataview indexing, and cross-volume continuity checks.
-3. **Use Wikilinks Liberally**: Type `[[Note-Name]]` whenever referencing characters, locations, factions, relics, or historical events to knit your world into a living knowledge graph.
 </details>
 
----
+<!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->
+<details>
+<summary><strong>⚙️ Ars Arcanum Deterministic Engine &amp; Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
 
-> **The Golden Rule of Sovereign Worldbuilding**:
-> *You do **not** need to fill out all lore categories before you start writing.*
-> Worldbuilding serves the story—never let worldbuilding become procrastination.
+### How the CLI Compilers &amp; Craft Engines Use This Template
+- **Unified VaultIndex (`arcanum vault-index`)**: Indexes YAML frontmatter (including `|` and `>` multiline block scalars), `@directives`, `[[Wikilinks]]`, multi-paragraph dialogue ratios, and SHA-256 paragraph hashes (`CACHE_VERSION = 3`).
+- **Epistemic POV Firewall (`arcanum validate-epistemic`)**: Compares character `knows:` baselines against chapter `learns:` and `references:` (`EPI-201..203`).
+- **Planetary Calendar &amp; Route Solver (`arcanum timeline-audit`)**: Audits `world.yaml` month lengths and `Locations/` route distances (`TIME-301..302`).
+- **PolyGlot Conlang Linter (`arcanum conlang-check`)**: Validates lexicon terms and phonotactics (`CON-401..402`).
+- **Resource Conservation Ledger (`arcanum ledger-audit`)**: Audits `resource_pools` and chapter `state_delta` transitions (`LED-501..502`).
+- **Multi-POV Narrative Braid (`arcanum braid`)**: Tracks POV word shares, tension curves, and drought alerts (`BRD-601`).
+- **Phase-Aware Effort (`arcanum sprint-effort`)**: Weights First Draft (`1.00x`), On-Phase Outline (`1.00x`), Worldbuilding (`0.50x`), Revision (`0.20x`), and blocks premature editing during Drafting (`0.00x`).
+- **Live Obsidian Bridge (`arcanum continuity-suite`)**: Generates `_Arcanum_Diagnostics.md` inside your vault root.
 
----
-
-## 🎯 The 3-Step Quickstart (Zero Overwhelm)
-
-If this is your first time using Ars Arcanum, follow this lightweight 3-step path to get drafting in under 5 minutes:
-
-### 1. Create Your Protagonist (2 minutes)
-- Open `Characters/` and create a note for your main character.
-- Use **[[Characters/Character-Quickstart-Template|Character-Quickstart-Template]]** (just 5 essential fields) if you want to move fast, or **[[Characters/Character-Template|Character-Template]]** if you want deep psychological backstory, voice profiling, and lineage tracking.
-
-### 2. Create Your Starting Location (1 minute)
-- Open `Locations/` and create a note for your story's opening setting (e.g. `Iron-Spire-City`).
-- Fill in a quick 2-sentence description and sensory mood, or use **[[Locations/Location-Template|Location-Template]]**.
-
-### 3. Open Your Manuscript & Write!
-- Open your manuscript in `~/Manuscripts/<ManuscriptName>` (or launch from Control Center / Studio Hub) in **novelWriter** or **Obsidian**.
-- Open `Book-01/01_Act_I/01_Chapter_01.md`.
-- Set `@pov: YourCharacterName` and start writing prose.
-
----
-
-## 🌳 Comprehensive Domain Template Directory
-
-As your narrative unfolds, create new lore notes when they appear in your draft using the specialized domain templates below. Each template includes concrete illustrative examples, YAML metadata schemas, and collapsed engine guidance:
-
-| Lore Domain | Target Folder | Dedicated Template | Underlying Craft Engines & Functions |
-| :--- | :--- | :--- | :--- |
-| **Characters & Cast** | `Characters/` | [[Characters/Character-Template\|Character-Template]] | `continuity`, `dramatis_personae`, `series_continuity`, `Charted Roots` |
-| **Character Quickstart** | `Characters/` | [[Characters/Character-Quickstart-Template\|Character-Quickstart-Template]] | `world_doctor`, `dramatis_personae` |
-| **Dialogue & Voice** | `Characters/` | [[Characters/Character-Voice-Profile-Template\|Character-Voice-Profile-Template]] | `voice` (formality, lexical richness, rhythm, `Sentence Rhythm`) |
-| **Dynasties & Lineages** | `Characters/` | [[Characters/Genealogy-Dynasty-Template\|Genealogy-Dynasty-Template]] | `genealogy` (pedigrees, succession rules, `Charted Roots`) |
-| **Locations & Atlas** | `Locations/` | [[Locations/Location-Template\|Location-Template]] | `cartography`, `senses`, `continuity`, `Obsidian Leaflet` |
-| **Climate & Biomes** | `Locations/` | [[Locations/Climate-Biome-Template\|Climate-Biome-Template]] | `climate` (Köppen biomes, rain shadows, insolation) |
-| **Routes & Logistics** | `Locations/` | [[Locations/Cartography-Route-Template\|Cartography-Route-Template]] | `journey` (travel march times, rations, water, baggage, `Leaflet`) |
-| **Factions & Guilds** | `Factions/` | [[Factions/Faction-Template\|Faction-Template]] | `factions` (diplomacy matrix, alliances, treaties, `Dataview`) |
-| **Tactics & Battles** | `Factions/` | [[Factions/Tactical-Skirmish-Battle-Template\|Tactical-Skirmish-Battle-Template]] | `tactical_sim` (troop frontage, morale, Lanchester attrition, `Calendarium`) |
-| **Council Debates** | `Factions/` | [[Factions/Deliberative-Council-Debate-Template\|Deliberative-Council-Debate-Template]] | `council` (narrative dialectics, voting blocs, Hegelian synthesis) |
-| **Magic & Tech Systems** | `Magic-Technology/`| [[Magic-Technology/Magic-Tech-System-Template\|Magic-Tech-System-Template]] | `magic_system` (energy costs, backlash, spell tiers, Sanderson laws) |
-| **Relics & Artifacts** | `Artifacts/` | [[Artifacts/Artifact-Relic-Template\|Artifact-Relic-Template]] | `magic_system`, `continuity`, `history` |
-| **Bestiary & Wildlife** | `Bestiary/` | [[Bestiary/Creature-Flora-Fauna-Template\|Creature-Flora-Fauna-Template]] | `ecology`, `senses`, `continuity` |
-| **Food Webs & Ecology**| `Bestiary/` | [[Bestiary/Ecology-Food-Web-Template\|Ecology-Food-Web-Template]] | `ecology` (trophic cascades, biomass transfer, Lindeman 10%) |
-| **Pantheons & Deities** | `Cosmology/` | [[Cosmology/Deity-Cosmology-Template\|Deity-Cosmology-Template]] | `cosmology`, `magic_system`, `factions` |
-| **Astrophysics & Orbits**| `Cosmology/` | [[Cosmology/Astrophysics-System-Template\|Astrophysics-System-Template]] | `astrophysics` (Keplerian orbits, Roche limits, dilation) |
-| **Planetary Calendars** | `Cosmology/` | [[Cosmology/Calendar-Moons-Template\|Calendar-Moons-Template]] | `calendar` (synodic moons, conjunctions, leap cycles, `Calendarium`) |
-| **Prophecies & Fate** | `Cosmology/` | [[Cosmology/Prophecy-Template\|Prophecy-Template]] | `prophecy` (fulfillment conditions, subversions, oracle) |
-| **Resonance & Themes** | `Cosmology/` | [[Cosmology/Resonance-Mesh-Template\|Resonance-Mesh-Template]] | `resonance` (cross-domain knowledge mesh, causal cascades) |
-| **Historical Events** | `History/` | [[History/Timeline-Event-Template\|Timeline-Event-Template]] | `history`, `timeline_sync`, `continuity`, `Calendarium` |
-| **Timeline Branches** | `History/` | [[History/Causality-Timeline-Branch-Template\|Causality-Timeline-Branch-Template]] | `causality` (divergence points, paradox indices) |
-| **Linguistics & Conlangs**| `Languages/` | [[Languages/Glossary-Conlang-Template\|Glossary-Conlang-Template]] | `conlang` (phonotactics, syllable templates, `Rootweave`, `LanguageForge`) |
-| **Idioms & Proverbs** | `Languages/` | [[Languages/Idioms-Proverbs-Culture-Template\|Idioms-Proverbs-Culture-Template]] | `idioms` (cultural worldviews, somatic oaths, speculative curses) |
-| **Macroeconomics** | `Economies/` | [[Economies/Economy-Template\|Economy-Template]] | `economy` (currencies, trade routes, inflation, guilds) |
-| **Writing Logs & Sprints**| `Templates/` | [[Templates/Daily-Writing-Log\|Daily-Writing-Log]] | `writing_sprint`, `portfolio`, `ambient`, `zen_studio`, `Writing Goals`, `Commentator` |
-| **Scene Note & Sequel** | `Templates/` | [[Templates/Scene-Note-Template\|Scene-Note-Template]] | `scene_mechanics`, `pacing`, `senses`, `timeline_sync`, `Commentator` |
-| **System Ops & Diagnostics** | `Templates/` | [[Templates/System-Engineering-and-Ops-Guide\|System-Engineering-and-Ops-Guide]] | `world_doctor`, `diagnostics`, `cache`, `fs_utils`, `migrate`, `config`, `local_rag`, `codex_export` |
-
----
-
-## 💡 Pro-Tips for Connected Lore
-
-- **Wikilinks**: Type `[[Character-Name]]` anywhere in notes or draft scenes to create a living link.
-- **Auto-Rosters**: When you set `faction: "[[Faction-Name]]"` in a character note, that character automatically appears in that faction's member table on the [[Templates/World-Bible-Index|World Bible Index]].
-- **Consistency Checking**: Run `arcanum doctor World-Bible/` or click **Doctor Diagnostics** in the Control Center anytime to check for broken links or typos in character names.
-- **Dynamic Craft Advice**: Run `arcanum tip` or `arcanum tip <engine>` to get context-aware worldbuilding advice straight from the engine wisdom registry.
-
----
-
-## ⚙️ First-Time Obsidian Vault Setup Note
-
-When opening this vault for the first time in Obsidian:
-1. When prompted about **Restricted Mode**, click **"Turn on community plugins"**.
-2. All 32 plugin configurations (`dataview`, `storyline`, `calendarium`, `obsidian-git`, `metadata-menu`, `longform`, `novel-word-count`, `storyteller-suite`, `templater-obsidian`, `rootweave`, `languageforge`, `charted-roots`, `commentator`, `sentence-rhythm`, etc.) are already pre-configured in `.obsidian/plugins/` to work seamlessly offline.
+</details>

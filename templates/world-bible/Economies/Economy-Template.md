@@ -1,3 +1,4 @@
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 ---
 fileClass: Economy
 type: economy
@@ -93,3 +94,19 @@ pie title Daily Labor Budget of a Common Scribe (15 Copper Bits/Day)
 ## 3. Trade Corridors, Monopolies & Supply Shocks
 - **The Silver Monopoly**: The Order retains exclusive sovereign rights to mint bullion coins. Melting coins for jewelry carries the death penalty.
 - **Supply Shock Scenario (The Winter Road Blockade)**: When blizzards close the [[Locations/Cartography-Route-Template|High-Pass-Road]] for 3 weeks, grain prices in High Sanctuary surge from 2 Copper to 12 Copper per loaf, triggering street bread riots.
+
+<!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->
+<details>
+<summary><strong>⚙️ Ars Arcanum Deterministic Engine &amp; Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
+
+### How the CLI Compilers &amp; Craft Engines Use This Template
+- **Unified VaultIndex (`arcanum vault-index`)**: Indexes YAML frontmatter (including `|` and `>` multiline block scalars), `@directives`, `[[Wikilinks]]`, multi-paragraph dialogue ratios, and SHA-256 paragraph hashes (`CACHE_VERSION = 3`).
+- **Epistemic POV Firewall (`arcanum validate-epistemic`)**: Compares character `knows:` baselines against chapter `learns:` and `references:` (`EPI-201..203`).
+- **Planetary Calendar &amp; Route Solver (`arcanum timeline-audit`)**: Audits `world.yaml` month lengths and `Locations/` route distances (`TIME-301..302`).
+- **PolyGlot Conlang Linter (`arcanum conlang-check`)**: Validates lexicon terms and phonotactics (`CON-401..402`).
+- **Resource Conservation Ledger (`arcanum ledger-audit`)**: Audits `resource_pools` and chapter `state_delta` transitions (`LED-501..502`).
+- **Multi-POV Narrative Braid (`arcanum braid`)**: Tracks POV word shares, tension curves, and drought alerts (`BRD-601`).
+- **Phase-Aware Effort (`arcanum sprint-effort`)**: Weights First Draft (`1.00x`), On-Phase Outline (`1.00x`), Worldbuilding (`0.50x`), Revision (`0.20x`), and blocks premature editing during Drafting (`0.00x`).
+- **Live Obsidian Bridge (`arcanum continuity-suite`)**: Generates `_Arcanum_Diagnostics.md` inside your vault root.
+
+</details>

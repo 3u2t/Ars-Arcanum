@@ -1,0 +1,30 @@
+# =============================================================================
+# ARS ARCANUM — WORLD-TIER AUTHORIAL CONSTITUTION (constitution.yaml)
+# =============================================================================
+schema_version: "1.0"
+scope_name: "Eldoria-Prime World Constitution"
+sovereign_offline_only: true
+allow_generative_ai: false
+rules:
+  - "!REV-101"
+  - "REV-102"
+  - "REV-103"
+  - "REV-104"
+  - "EPI-201"
+  - "EPI-202"
+  - "TIME-301"
+  - "TIME-302"
+  - "CON-401"
+  - "CON-402"
+  - "LED-501"
+  - "LED-502"
+  - "BRD-601"
+banned_idioms:
+  - "all of a sudden"
+  - "needless to say"
+thresholds:
+  max_chapter_words: 6500
+  min_chapter_words: 1200
+  max_pov_drought_words: 20000
+  high_churn_ratio_threshold: 0.50
+  min_scrap_extraction_words: 50

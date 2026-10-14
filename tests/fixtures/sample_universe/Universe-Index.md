@@ -1,6 +1,10 @@
-# SampleUniverse Cosmos Index
+---
+title: "Sample Universe — Automated Continuity & Telemetry Fixture"
+universe: "Sample-Universe"
+schema_version: "1.0"
+---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-Welcome to the **SampleUniverse** multi-world master hub.
+# Sample Universe Fixture — Feature Verification Guide
 
-## Worlds in this Universe
-- [[sample_world/world|sample_world]]
+This fixture exercises multi-book omnibus compilation (`omnibus.py`), portfolio velocity aggregation (`portfolio.py`), and deterministic continuity auditing (`vault_continuity_runner.py`).

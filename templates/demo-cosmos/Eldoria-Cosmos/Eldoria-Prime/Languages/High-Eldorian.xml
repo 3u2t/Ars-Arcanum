@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dictionary>
+  <lexicon>
+    <word>
+      <conWord>kaleth</conWord>
+      <localWord>silver spire</localWord>
+      <proc>ˈka.lɛθ</proc>
+      <wordTypeId>noun</wordTypeId>
+      <etymology>Proto-Eldorian *kal- (shine) + -eth (pillar)</etymology>
+    </word>
+    <word>
+      <conWord>valorn</conWord>
+      <localWord>star-sworn sentinel</localWord>
+      <proc>ˈva.lɔrn</proc>
+      <wordTypeId>noun</wordTypeId>
+      <etymology>val (star) + orn (guard)</etymology>
+    </word>
+    <word>
+      <conWord>thosar</conWord>
+      <localWord>aether current</localWord>
+      <proc>ˈθo.sar</proc>
+      <wordTypeId>noun</wordTypeId>
+      <etymology>thos (breath) + ar (river)</etymology>
+    </word>
+  </lexicon>
+</dictionary>

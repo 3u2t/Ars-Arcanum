@@ -1,10 +1,16 @@
-# Ars Arcanum Manuscript Project Manifest
+# =============================================================================
+# ARS ARCANUM — MANUSCRIPT PROJECT MANIFEST (manuscript.yaml)
+# =============================================================================
 schema_version: "1.0"
+name: "The Silver Chronicles"
 title: "The Silver Chronicles"
+type: "manuscript"
 author: "Author Name"
 universe: "Eldoria-Cosmos"
 world: "Eldoria-Prime"
 status: "in-progress"
+stage: "Drafting"
+target_words: 120000
 description: "The epic saga of Aeloria Vael and the defense of the floating spires."
 isbn: "978-0-306-40615-7"
 language: "en-US"

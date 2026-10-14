@@ -1,18 +1,25 @@
 ---
 name: "Lord Kaelen"
-aliases:
-  - "Warden of the Vale"
+title: "Lord Kaelen — Warden of the Whispering Marches"
 type: "character"
-faction: "[[Order-of-the-Silver-Dawn]]"
-current_location: "[[Whispering-Vale]]"
-birth_year: 1195
-death_year: 1245
-status: "active"
-role: "Mentor"
-eyes: "grey"
-hair: "silver"
+role: "Deuteragonist POV"
+faction: "Order of the Silver Dawn"
+knows:
+  - "whispering_vale_paths"
+  - "silver_dawn_oath"
+resource_pools:
+  aether_vials: 3
+  supply_rations: 50
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# Lord Kaelen
+# 👤 Lord Kaelen — Frontier Commander & Tactical Simulation Profile
 
-Lord Kaelen is the seasoned battle commander stationed at the [[Whispering-Vale]]. A veteran of the frontier campaigns, he serves as mentor to [[Aeloria-Vael]].
+<details>
+<summary><strong>⚔️ Tactical Command &amp; POV Drought Tracking (`BRD-601` &amp; `docs/TACTICAL_SIM.md`)</strong></summary>
+
+Kaelen serves as the primary POV for Chapter 2 (`02_Chapter_02.md`). Tracking his appearances via `arcanum braid` ensures his frontier subplot never exceeds the `20,000`-word POV drought threshold.
+
+</details>
+
+Commander of the sky-galley garrison stationed between [[High-Sanctuary]] and [[Whispering-Vale]].

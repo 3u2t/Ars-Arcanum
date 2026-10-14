@@ -1,43 +1,57 @@
-# Chapter 1: The Ash and the Ink
+---
+chapter: 1
+title: "Chapter One — The Threshold of Dawn"
+pov: "Protagonist"
+location: "Capital Citadel"
+year: 1001
+month: 1
+day: 1
+travel_mode: "horse_mounted"
+subplots:
+  - "Main Quest"
+tension: 6
+references:
+  - "initial_world_axiom"
+learns:
+  - "inciting_incident_secret"
+state_delta:
+  mana_reserve: -10
+summary: |
+  Template chapter demonstrating all YAML frontmatter keys, novelWriter `@directives`,
+  multi-paragraph dialogue conventions, CriticMarkup annotations, and continuity tags.
+---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-@pov: Kaelen
-@char: Kaelen, Master Vance
-@location: High Sanctuary Archives
-@time: 1248-04-15 18:30 (Dusk)
-@narrative_day: Day 1
-@thread: Main-Plot-Conspiracy, Subplot-Ancient-Order
-@scene: Goal-Transcribe-Treaty, Conflict-Vance-Refusal, Disaster-Gate-Assault
-@pacing: High-Tension
-@status: Draft
+@pov: Protagonist
+@location: Capital Citadel
+@subplot: Main Quest
+@tension: 6
 
-> [!NOTE] ⚠️ EDUCATIONAL TEMPLATE (AI-GENERATED)
-> **Notice**: This template was AI-generated for educational demonstration and craft guidance within the Ars Arcanum operating system. It is strictly non-commercial and provided solely to demonstrate system features, mechanical schemas, and engine capabilities. Authors should replace placeholder values with their original manuscript prose.
+# Chapter 1: The Threshold of Dawn
 
 <details>
-<summary>💡 <b>Ars Arcanum Engine Guidance & Feature Breakdown (Click to Expand)</b></summary>
+<summary><strong>📐 Scene Mechanics, Pacing &amp; Continuity Directives (`docs/SCENE_MECHANICS.md` &amp; `docs/PACING.md`)</strong></summary>
 
-### Features Demonstrated in This Chapter:
-- **Narrative Structure & Hook**: `structure` (`arcanum structure`) — Serves as the **Act I Hook & Status Quo** (0%–5%), establishing the protagonist's ordinary world, sensory atmosphere, and the approaching inciting disaster.
-- **Dwight Swain Scene Mechanics**: `scene_mechanics` (`arcanum scene audit`) — Formatted as an **Action Scene**:
-  - *Goal*: Kaelen strives to complete the transcription of the forbidden imperial treaty.
-  - *Conflict*: Master Vance orders the archive evacuated and the vellum burned.
-  - *Disaster*: Iron hammers breach the lower gates; inquisitors arrive to execute all occupants.
-- **Sensory Immersion**: `senses` (`arcanum senses`) — Actively activates 5 channels (Acoustic spire bells, Visual amber candlelight, Olfactory iron gall ink, Somatic adrenaline rush, Tactile cold balustrades).
-- **Clean Publication Stripping**: All `@tag:` headers are automatically stripped during print/EPUB compilation by `export_book.sh`.
+- **Scene Goal**: Establish the protagonist in their ordinary world and trigger the inciting discovery (`learns: [inciting_incident_secret]`).
+- **Conflict / Obstacle**: A sudden anomaly drains `-10` `mana_reserve` (`state_delta`).
+- **Outcome (Yes, But / No, And)**: The secret is uncovered, forcing departure along the frontier route.
+
 </details>
 
-The bell of the Seventh Spire tolled three times, its deep bronze resonance vibrating through the ancient cedar beams of the high archives. Outside the leaded glass windows, rain fell in silver sheets over the slate rooftops of High Sanctuary, blurring the distant limestone crags into charcoal silhouettes.
+The morning bells echoed across [[Capital-Citadel]] as the watchtower gates swung open.
 
-Kaelen dipped his quill into the iron gall ink, his fingers stained dark purple from three days of continuous transcription. On the dry vellum before him lay the scorched fragments of the Old Imperial Treaty—words inked three centuries ago by sovereigns who had long turned to ash.
+<!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->
+<details>
+<summary><strong>⚙️ Ars Arcanum Deterministic Engine &amp; Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
 
-“You should not be reading those passages, boy,” Master Vance’s voice cut through the steady hiss of the rain. The old archivist stood in the arched doorway, a sputtering tallow candle trembling in his gnarled hand. His knuckles were chalk-white against the brass holder.
+### How the CLI Compilers &amp; Craft Engines Use This Template
+- **Unified VaultIndex (`arcanum vault-index`)**: Indexes YAML frontmatter (including `|` and `>` multiline block scalars), `@directives`, `[[Wikilinks]]`, multi-paragraph dialogue ratios, and SHA-256 paragraph hashes (`CACHE_VERSION = 3`).
+- **Epistemic POV Firewall (`arcanum validate-epistemic`)**: Compares character `knows:` baselines against chapter `learns:` and `references:` (`EPI-201..203`).
+- **Planetary Calendar &amp; Route Solver (`arcanum timeline-audit`)**: Audits `world.yaml` month lengths and `Locations/` route distances (`TIME-301..302`).
+- **PolyGlot Conlang Linter (`arcanum conlang-check`)**: Validates lexicon terms and phonotactics (`CON-401..402`).
+- **Resource Conservation Ledger (`arcanum ledger-audit`)**: Audits `resource_pools` and chapter `state_delta` transitions (`LED-501..502`).
+- **Multi-POV Narrative Braid (`arcanum braid`)**: Tracks POV word shares, tension curves, and drought alerts (`BRD-601`).
+- **Phase-Aware Effort (`arcanum sprint-effort`)**: Weights First Draft (`1.00x`), On-Phase Outline (`1.00x`), Worldbuilding (`0.50x`), Revision (`0.20x`), and blocks premature editing during Drafting (`0.00x`).
+- **Live Obsidian Bridge (`arcanum continuity-suite`)**: Generates `_Arcanum_Diagnostics.md` inside your vault root.
 
-“They aren’t just treaties, Master,” Kaelen replied quietly, without lifting the steel nib from the page. “They are coordinates. The First Sunder wasn’t an earthquake. It was an over-siphon.”
-
-Vance stepped forward, the floorboards groaning under his weight. Shadows pooled beneath his hollow cheeks, carving his weathered face into severe, frightened angles. “Some truths are buried because the realm cannot bear their weight. Close the folio. Pack your satchel.”
-
-“And let them burn three hundred years of history?”
-
-“Better the parchment burns than your flesh upon an inquisitor’s pyre.” Vance reached to snuff the candle, but his hand froze in mid-air.
-
-A sudden, thunderous crash echoed from the street four floors below—the terrifying, splintering shriek of heavy oak gates buckling under iron siege hammers.
+</details>

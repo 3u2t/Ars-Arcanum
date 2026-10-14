@@ -1,6 +1,20 @@
-# Eldoria Multiverse Manifest
+# =============================================================================
+# ARS ARCANUM — SOVEREIGN MULTIVERSE MANIFEST (universe.yaml)
+# =============================================================================
+# Engine Integration:
+#   • Validated by: `scripts/lib/project_scaffold.py` & `tests/test_manifest_schema.py`
+#   • Indexed by:   `scripts/lib/portfolio.py` (`arcanum portfolio`)
+#   • Backed up by: `scripts/lib/backup.py` (`arcanum backup --tag milestone-1`)
+# =============================================================================
 schema_version: "1.0"
 name: "Eldoria-Cosmos"
-description: "A rich high-fantasy narrative universe with celestial aether weaving and ancient dynastic factions."
+type: "universe"
+description: "A rich high-fantasy narrative universe with celestial aether weaving, custom 360-day solar reckoning, PolyGlot constructed languages, and ancient dynastic factions."
 created_at: "2026-09-21"
 status: "active"
+settings:
+  sovereign_offline_only: true
+  allow_generative_ai: false
+  career_milestone_words: 15000000
+  annual_target_words: 730000
+  daily_effort_goal_points: 2000.0

@@ -1,24 +1,34 @@
 ---
-title: "The Echoing Vale"
 chapter: 2
-pov: "[[Lord-Kaelen]]"
-focus: "[[Whispering-Vale]]"
+title: "Descent to the Mist-Basin"
+pov: "Lord Kaelen"
+location: "Whispering Vale"
+year: 1042
+month: 1
+day: 3
+travel_mode: "horse_mounted"
+subplots:
+  - "Frontier Patrol"
+  - "Aether Depletion Mystery"
+tension: 7
+references:
+  - "whispering_vale_paths"
+  - "silver_dawn_oath"
+learns:
+  - "theron_betrayal_cipher"
+state_delta:
+  aether_vials: -1
+  supply_rations: -10
 ---
+<!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
-# Chapter 2: The Echoing Vale
+@pov: Lord Kaelen
+@location: Whispering Vale
+@subplot: Frontier Patrol
+@tension: 7
 
-@pov: Lord-Kaelen
-@location: Whispering-Vale
-@character: Aeloria-Vael
+# Chapter 2: Descent to the Mist-Basin
 
-The crystalline pine trees of the [[Whispering-Vale]] chimed softly as the wind shifted.
+Beneath the bioluminescent ferns of [[Whispering-Vale]], [[Lord-Kaelen]] crouched beside the shattered boundary stone from [[The-Great-Sundering]]. Carved into the underside of the tablet was the seal of [[Order-of-the-Silver-Dawn]]—and the encrypted ledger of [[Archmage-Theron]].
 
-Lord Kaelen inspected the perimeter barricades. The scouts of the [[Order-of-the-Silver-Dawn]] stood vigilant upon the ridges.
-
-"Commander," a young scout called out. "The celestial skiff from [[High-Sanctuary]] approaches."
-
-Kaelen shielded his eyes. Through the mountain mist, the silver hull descended smoothly. [[Aeloria-Vael]] stepped onto the wooden landing dock, her eyes alight with purpose.
-
-"You took your time, girl," Kaelen grunted, though a brief smile broke his weathered features.
-
-"Theron insisted on attuning the harmonic stabilizers," Aeloria replied. "Show me the breach."
+"These siphons were not built by raiders," Kaelen murmured, tracing the High Eldorian inscription *kaleth valorn*. "They were commissioned from the Zenith Spire itself."
