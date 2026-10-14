@@ -82,3 +82,17 @@ Key condition: Every legacy module cutover must pass the existing 55-file `tests
 
 🎯 WHAT THEY MISSED: Your Obsidian Workspace (`.obsidian/`) Has 32 Configured Plugins—But Zero Live Bridge to Your New Continuity Engines
    → While [`configs/plugin_catalog.json`](https://github.com/aryansinghnagar/Ars-Arcanum/blob/main/configs/plugin_catalog.json) pre-configures 32 offline Obsidian plugins inside `.obsidian/`, authors writing inside Obsidian still have to switch to a terminal to run `arcanum validate`, `arcanum sprint-effort`, or `arcanum epistemic`. By generating a single `.obsidian/community-plugins` Shell Commands configuration or an auto-updated `_Arcanum_Diagnostics.md` callout dashboard note inside the vault whenever `VaultIndex` runs, authors get real-time continuity errors (`EPI-201`, `TIME-301`, `CON-401`, `LED-501`) and daily Phase-Aware Effort bars directly inside their Obsidian sidebar without ever leaving their prose editor.
+
+
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
+
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

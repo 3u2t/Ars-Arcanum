@@ -1,55 +1,14 @@
-# Security Policy: Ars Arcanum
+# Security Policy (`SECURITY.md`)
 
-## 1. Scope & Posture
+## Supported Versions & Sovereign Security Posture
 
-Ars Arcanum is a single-user offline authoring and worldbuilding platform. It is designed to run locally on Linux workstations without persistent network listening daemons, setuid binaries, or remote service endpoints.
+| Version | Supported | Runtime Dependencies | Security Architecture |
+| :--- | :--- | :--- | :--- |
+| `0.1.x` (`main`) | ✅ Yes | Zero-Pip (`100%` Python `>=3.10` Stdlib) | `is_safe_subpath`, `atomic_write`, `ArcanumLock`, `plugin_sandbox.py`, strict CSP |
 
-Security priorities for Ars Arcanum focus on:
-- **Local Execution Safety**: Safe handling of arbitrary filenames, shell escaping, path traversal prevention, and sandboxed temporary directories.
-- **Data Protection & Integrity**: Non-destructive operations, transactional directory creation, crash recovery, and verified backup archives.
-- **Supply Chain Integrity**: SHA-256 digest validation of downloaded binaries (e.g., Typst) and immutable pinning of external CI actions and dependencies.
+## Security Controls Enforced in Production
 
-### Installer Privilege Surface (disclosed)
-
-`setup_arcanum.sh` is the only component that elevates privileges. For transparency, everything it does with `sudo` is enumerated here:
-
-- `sudo apt-get update` and `sudo apt-get install` for the ~30 explicitly named packages and 7 font packages declared inside the script (no wildcards, no third-party PPAs).
-- `sudo flatpak remote-add --if-not-exists --system flathub` and `sudo flatpak install --system` (with `--user` fallback) for exactly the three Flathub app IDs listed in `docs/COMPATIBILITY.md`.
-- `sudo install -m 755` of the Typst release binary into `/usr/local/bin/typst` — performed **only** after the GitHub-published SHA-256 digest matches; installation is refused when the digest is unavailable.
-- `gio set metadata::trusted true` on the specific desktop launcher files the installer itself created (no bulk filesystem metadata changes).
-
-`uninstall_arcanum.sh` reverts the desktop launchers, and with `--purge-flatpaks` also removes the Flatpak apps and `/usr/local/bin/typst`. No Ars Arcanum script writes outside `${HOME}` (world data), `/usr/local/bin/typst`, and the package/Flatpak targets declared above. Restores additionally refuse archives containing path-traversal members, symlinks (`l`), dangerous `.git/config` configurations, or executable git hooks. Flatpak packaging operates without host D-Bus grants. Passphrases are passed via standard input (`--passphrase-fd 0`) rather than process argument lists.
-
----
-
-## 2. Supported Versions
-
-Only the current release branch on `main` receives security updates.
-
-| Version / Branch | Supported | Notes |
-| :--- | :--- | :--- |
-| `main` (Latest) | :white_check_mark: | Active engineering & security fixes |
-| Legacy Drafts / Releases | :x: | Unsupported |
-
----
-
-## 3. Reporting a Vulnerability
-
-If you discover a security vulnerability, please disclose it responsibly:
-
-1. **Preferred Method**: Submit a report via [GitHub Private Vulnerability Reporting](https://github.com/ars-arcanum/scriptorium/security/advisories/new).
-2. **Alternative Method**: Email the project maintainers with the subject tag `[SECURITY: Ars Arcanum]`.
-
-### Response Timeline (SLA)
-- **Initial Acknowledgment**: Within **72 hours** of report receipt.
-- **Assessment & Triage**: Within **7 days** of acknowledgment.
-- **Patch & Advisory Publication**: Within **30 days** depending on severity and complexity.
-
----
-
-## 4. What to Include in a Report
-- A clear description of the vulnerability, affected components, and potential impact.
-- Step-by-step reproduction instructions or a proof-of-concept script/fixture.
-- Any suggested remediations or mitigations.
-
-Please do not open public GitHub issues for undisclosed security vulnerabilities.
+1. **Path Traversal Confinement (`is_safe_subpath`)**: Every file read, write, cache update, and `.docx`/`.pgd` archive operation in `scripts/lib/vault_index.py` and `scripts/lib/fs_utils.py` verifies that target paths resolve strictly inside the Sovereign Vault root (`PathSecurityError`).
+2. **Subprocess Plugin Isolation (`scripts/lib/plugin_sandbox.py`)**: Custom user plugins in `.arcanum/plugins/*.py` execute inside an isolated `python3 -I -B` subprocess with a sanitized environment (`PATH=/usr/bin:/bin`), a 1 MB stdout cap, and a 5.0-second wall-clock timeout.
+3. **Air-Gapped HTML/SVG Visualizers (`Content-Security-Policy`)**: All HTML outputs (`narrative_braid.py`, `portfolio.py`, `revision_heatmap.py`, `manuscript_diff.py`, `codex_export.py`) enforce `default-src 'none'; style-src 'unsafe-inline'; img-src data:;` and contain zero external CDN URLs.
+4. **Transactional File Integrity (`atomic_write` & `ArcanumLock`)**: All file writes stage to a sibling tempfile (`os.fsync`) and promote atomically via `os.replace`, preserving OS hardlinks across immutable `Draft-*` snapshots.

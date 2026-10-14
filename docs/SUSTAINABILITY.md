@@ -1,41 +1,27 @@
-# Ars Arcanum — Open-Source Sustainability & Funding Model
+# Sustainability & Long-Term Stewardship
 
-> **Vision**: Maintain a financially viable, independent, open-source software ecosystem without compromising on privacy, data sovereignty, or software freedom.
+## Independence & Freedom Pledge
 
----
+Ars Arcanum pledges permanent independence from proprietary cloud ecosystems, subscription paywalls, and telemetry-driven business models. Because the entire runtime is written in 100% Python standard library code operating over plain-text Markdown, YAML, and JSONL files, your creative universes remain permanently accessible even on air-gapped hardware decades in the future.
 
-## 1. Independence & Freedom Pledge
+## Funding Streams & Financial Stewardship
 
-Ars Arcanum was created to free fiction authors from predatory subscriptions and proprietary lock-in. To safeguard this mission:
+Development and maintenance of Ars Arcanum are sustained through voluntary community patronage, open-source grants, and documentation sponsorships. Zero engineering decisions are influenced by commercial third-party vendors, and 100% of core features remain free and open-source under the MIT License.
 
-1. **No Venture Capital Lock-in**: Ars Arcanum will never accept venture funding or business arrangements that mandate paywalls, advertising, telemetry, or artificial restrictions on software capabilities.
-2. **Permanent Open Source**: Core code and craft engines will remain licensed under the permissive MIT license.
-3. **Local-First Lifetime Invariant**: All authoring, editing, and worldbuilding features operate 100% offline on the author's computer.
+## GitHub Sponsors
 
----
+Community members and studios who wish to support ongoing development of deterministic worldbuilding compilers, Typst publication templates, and offline Obsidian integrations can contribute via **GitHub Sponsors** (configured in [`.github/FUNDING.yml`](../.github/FUNDING.yml)).
 
-## 2. Funding Streams & Financial Stewardship
 
-Financial contributions directly fund development, maintenance, security audits, and packaging infrastructure:
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
 
-### 2.1 Individual Recurring Sponsorships
-- **GitHub Sponsors**: [github.com/sponsors/ars-arcanum](https://github.com/sponsors/ars-arcanum)
-- **Open Collective**: `opencollective.com/ars-arcanum`
-
-### 2.2 Community Grant Programs & Foundations
-- Application to non-profit digital rights and open-source infrastructure foundations (e.g. NLnet Foundation, Open Source Technology Improvement Fund, Sovereign Tech Fund).
-
-### 2.3 Allocation of Funds
-All sponsored funds are allocated with transparent reporting:
-- **60%**: Core maintenance, feature development, and upstream package maintenance (Debian/PPA, Flathub, AUR, Fedora Copr).
-- **20%**: Independent third-party security audits and cryptographic verification.
-- **10%**: Continuous Integration infrastructure (dedicated multi-arch build runners for x86_64 and ARM64).
-- **10%**: Community documentation, author tutorials, and onboarding video assets.
-
----
-
-## 3. How You Can Support
-
-- **Star & Share**: Star the repository on GitHub and recommend it to fellow authors.
-- **Contribute Code & Guides**: Submit pull requests for craft linters, typography templates, or bug fixes.
-- **Sponsor Ongoing Development**: Join as a recurring monthly backer on GitHub Sponsors or Open Collective.
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

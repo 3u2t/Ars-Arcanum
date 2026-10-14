@@ -1,81 +1,37 @@
-# Ars Arcanum — Open-Source Governance Charter & Project Operating Model
+# Ars Arcanum Project Governance
 
-> **Project Mandate**: Maintain a 100% sovereign, offline, privacy-first speculative fiction authoring platform that remains open, free from telemetry, and permanently available to authors worldwide.
-> **Current Version**: `0.1.0` | **License**: MIT
+## Governance Principles
 
----
+Ars Arcanum is governed as an independent, sovereign, local-first open-source project under the MIT License. All architectural and product decisions prioritize authorial ownership, deterministic verification ([ADR-0001](adr/0001-demotion-of-normative-evaluators-and-three-subsystem-epistemic-safety.md)), zero-cloud survivability, and long-term backward compatibility of plain-text Markdown and YAML vaults.
 
-## 1. Governance Principles
+## Roles & Responsibilities
 
-Ars Arcanum operates under four non-negotiable core principles:
+- **Lead Architect & Maintainer**: Guides the overall vision, safeguards the 5 core engineering contracts in [`AGENTS.md`](../AGENTS.md), reviews architectural RFCs, and manages release signing.
+- **Subsystem Maintainers**: Steward specific layered domains across `src/arcanum/` and `scripts/lib/` (`core`, `manuscript`, `worldbible`, `publishing`, `ui`).
+- **Contributors & Community Auditors**: Submit bug fixes, continuity rules, test cases, and documentation improvements via Pull Requests.
 
-1. **Author Sovereignty**: No proprietary file formats, no mandatory cloud sync, no lock-in. Plain Markdown (`.md`) and standard open YAML schemas remain the primary source of truth.
-2. **Zero-Telemetry & Local-First**: The software shall never include phone-home analytics, advertising, tracking, or mandatory internet connectivity for core authoring functions.
-3. **Fail-Closed Security & Crash Safety**: Every filesystem operation must use atomic writes (`atomic_write`), verified checksums, and defensive validation against corruption or path traversal.
-4. **Transparent & Merit-Based Evolution**: Major architectural shifts require formal Architecture Decision Records (ADRs) and community RFC review.
+## Decision-Making & RFC Process
 
----
+Major architectural changes—such as modifying the `.arcanum_cache.json` schema (`CACHE_VERSION`), adding new CLI subcommands to `DISPATCH_TABLE`, or altering the 3-tier `constitution.yaml` cascade—are recorded as Architecture Decision Records (ADRs) under `docs/adr/` and reviewed against the test harness before merging.
 
-## 2. Roles & Responsibilities
+## Release Cadence & Versioning
 
-```mermaid
-flowchart TD
-    A["Project Lead / Benevolent Dictator for Life (BDFL)"] --> B["Core Maintainers Team"]
-    B --> C["Domain Module Stewards\n(Craft, Typesetting, Security, UI)"]
-    C --> D["Community Contributors & Authors"]
-```
+Ars Arcanum follows Semantic Versioning (`MAJOR.MINOR.PATCH`). Version identifiers are strictly synchronized across `scripts/arcanum`, `scripts/lib/cli.py`, `scripts/lib/diagnostics.py`, `pyproject.toml`, and `CHANGELOG.md`, and verified automatically on every commit by `tests/test_version_consistency.py`.
 
-### 2.1 Project Lead (BDFL)
-- Holds final decision-making authority in deadlocked architectural disputes.
-- Sets high-level strategic roadmap, release tags, and security advisory disclosures.
-- Current Lead: **Ars Arcanum Project Lead** (`@ars-arcanum`).
+## Security & Vulnerability Disclosure
 
-### 2.2 Core Maintainers
-- Review and merge pull requests across the codebase.
-- Maintain CI/CD pipelines, regression test suites, and automated test coverage floors.
-- Ensure strict adherence to coding standards (Ruff, Mypy).
-- Minimum criteria for core maintainer nomination: $\ge 6$ months of continuous, high-quality contributions and unanimous approval of existing maintainers.
+Security vulnerabilities—particularly involving path traversal (`is_safe_subpath`), plugin subprocess isolation (`plugin_sandbox.py`), OpenXML/ZIP parsing (`docx_tracked_changes.py`, `conlang_linter.py`), or CSP headers—should be reported according to [`SECURITY.md`](../SECURITY.md) and evaluated against [`docs/THREAT_MODEL.md`](THREAT_MODEL.md).
 
-### 2.3 Domain Stewards
-- **Craft & Speculative Sciences**: Manages orbital mechanics, climate models, hard magic validation, and genealogy DAG algorithms.
-- **Publishing & Typesetting**: Manages Typst templates, Pandoc filters, and OpenXML (.docx) sync engines.
-- **Desktop & UI Presentation**: Manages GTK3 interfaces, Studio Hub, Zen Studio, and Story Canvas corkboards.
-- **Security & Reliability**: Manages path traversal defenses, GPG backup encryption, and atomic filesystem safety.
 
----
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
 
-## 3. Decision-Making & RFC Process
-
-For trivial bug fixes, documentation corrections, and non-breaking performance improvements, standard pull requests require **one core maintainer approval**.
-
-For major architectural changes:
-1. **RFC Proposal**: The author submits an issue tagged `[RFC] <Title>`.
-2. **Community Discussion**: A minimum 14-day public review period during which domain stewards and authors provide feedback.
-3. **ADR Recording**: Once consensus is reached, the decision is formally drafted as an Architecture Decision Record in `decisions.md`.
-4. **Implementation & Gate**: Code is merged only after meeting 100% test pass rate, strict static typing, and zero linter violations.
-
----
-
-## 4. Release Cadence & Versioning
-
-The project adheres strictly to **Semantic Versioning 2.0.0** (`MAJOR.MINOR.PATCH`):
-- `MAJOR`: Breaking changes to CLI syntax, manifest formats, or core data architectures.
-- `MINOR`: Backwards-compatible additions of craft engines, UI capabilities, or export formats.
-- `PATCH`: Backwards-compatible bug fixes, performance optimizations, and security patches.
-
----
-
-## 5. Security & Vulnerability Disclosure
-
-Ars Arcanum takes security vulnerabilities and path traversal defenses seriously:
-- **Reporting Channel**: Security concerns or vulnerability disclosures should be sent directly to security maintainers or filed via encrypted PGP channel.
-- **Triage Window**: Initial acknowledgment within 48 hours and remediation patches released within 7 business days.
-- **Air-Gapped Isolation Guarantee**: Core authoring engines never require outbound network connectivity, minimizing attack vectors.
-
----
-
-## 6. Recommended Reading & References
-
-1. **Fogel, Karl** (2005). *Producing Open Source Software: How to Run a Successful Free Software Project*. O'Reilly Media.
-2. **Raymond, Eric S.** (1999). *The Cathedral and the Bazaar: Musings on Linux and Open Source by an Accidental Revolutionary*. O'Reilly Media.
-3. **Nygard, Michael** (2011). *Documenting Architecture Decisions*. (ADR methodology).
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

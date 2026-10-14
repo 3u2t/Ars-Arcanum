@@ -1,261 +1,68 @@
-# 🖋️ Ars Arcanum — Sovereign Authoring Operating System & Craft Studio
+# 🖊️ Ars Arcanum — Sovereign Authoring Operating System & Craft Studio
 
-> **A 100% offline, privacy-first operating system and craft studio for speculative fiction authors, worldbuilders, and narrative designers.**  
-> Zero cloud dependencies · Zero telemetry · Deterministic rails over probabilistic drift · Your intellectual property, sovereign forever.
+[![Release](https://img.shields.io/badge/Release-v0.1.0-amber)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![Status](https://img.shields.io/badge/Status-Sovereign_Studio-emerald)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![Tests](https://img.shields.io/badge/Tests-507_Passing_(100%25)-brightgreen)](https://github.com/aryansinghnagar/Ars-Arcanum/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-%E2%89%A580%25-blue)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![License](https://img.shields.io/badge/License-MIT-purple)](LICENSE)
+[![Dependencies](https://img.shields.io/badge/Dependencies-Zero--Pip_(100%25_Stdlib)-orange)](pyproject.toml)
 
-[![Release: v0.1.0](https://img.shields.io/badge/Release-v0.1.0-blue.svg)](CHANGELOG.md)
-[![Status: Sovereign Craft Studio](https://img.shields.io/badge/Status-Sovereign%20Studio-brightgreen.svg)](#)
-[![Tests: 486](https://img.shields.io/badge/Tests-486%20Passing%20(100%25)-brightgreen.svg)](#)
-[![Coverage: 80%](https://img.shields.io/badge/Coverage-80%25-brightgreen.svg)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Zero-Pip](https://img.shields.io/badge/Dependencies-Zero--Pip%20(100%25%20Stdlib)-success.svg)](#)
+**Ars Arcanum** is an open-source, local-first, 100% offline sovereign worldbuilding, narrative continuity, and manuscript engineering operating system designed for speculative fiction (Science Fiction & Fantasy) writers, storytellers, and worldbuilders.
 
----
+## 🏛️ The Sovereignty Principle
 
-## The Sovereignty Principle
+1. **100% Offline & Air-Gapped by Default**: Zero cloud lock-in, zero remote telemetry, and strict Content-Security-Policy (`default-src 'none'; style-src 'unsafe-inline'`) across all generated HTML/SVG visualizers.
+2. **Deterministic Continuity Compilers over Generative Slop**: Ars Arcanum never writes or hallucinates prose for you. Instead, it treats your World Bible and Manuscript like an executable repository—auditing POV spoiler boundaries, custom planetary calendars, overland/relativistic travel physics, PolyGlot conlang phonotactics, and hard-magic resource conservation.
+3. **Zero-Pip Runtime Survivability**: Built entirely on Python `>=3.10` standard library primitives (`scripts/lib/` and `src/arcanum/`) so your creative vaults remain readable and compilable 30 years from now.
+4. **Three-Subsystem Epistemic Safety ([ADR-0001](docs/adr/0001-demotion-of-normative-evaluators-and-three-subsystem-epistemic-safety.md))**:
+   - **Subsystem 1 (Deterministic Invariants & Continuity Compilers)**: Atomic file writes, cross-platform locks, schema validation, POV epistemic firewalls (`EPI-*`), timeline/route physics (`TIME-*`), conlang phonotactics (`CON-*`), and resource conservation ledgers (`LED-*`).
+   - **Subsystem 2 (Descriptive Telemetry & Craft Analytics)**: Phase-Aware Effort Multipliers, word/dialogue/CJK telemetry, SHA-256 paragraph-hash diffing, revision heatmaps (`REV-*`), and multi-POV narrative braid matrices (`BRD-*`).
+   - **Subsystem 3 (Authorial Governance & Obsidian Integration)**: 3-tier `constitution.yaml` cascade (`!RULE_ID` negation), 32 pre-configured offline Obsidian plugins, and live `_Arcanum_Diagnostics.md` callout dashboards.
 
-> **"Measure everything that helps the author think; prescribe nothing unless the author explicitly asks for a prescription."**
-
-Ars Arcanum (code-named *Scriptorium*) is a sovereign, local-first authoring platform and worldbuilding operating system. It provides speculative fiction novelists, epic fantasy worldbuilders, and narrative designers with an exhaustive professional craft studio—from secondary-world bibles and conlang phonotactics to sub-second typesetting and omnibus compilation—without a single cloud dependency, external telemetry ping, or Python pip requirement.
-
-All manuscripts and lore vaults are stored in **standard CommonMark Markdown** (`.md`), human-readable **YAML frontmatter**, and standard **DOCX / Typst** source. Your intellectual property remains un-scraped, un-monetized, and completely readable 50 years from now on any POSIX or Windows machine.
-
----
-
-## ✨ Architectural Pillars & Studio Capabilities
-
-| Studio Component | Core Capabilities |
-|:--|:--|
-| **🎯 Altitude-Aware Scoping** | Execute craft engines on exact slices: scenes (`--scenes 1-3`), chapters (`-c 1-5`, `ch01..ch05`), books (`-b 1-2`), lore categories, or worlds without whole-vault overhead. |
-| **🪐 World Bible Ecosystem** | Obsidian-compatible vault architecture with 32 pre-configured offline community plugins and structured schemas for characters, cultures, pantheons, genealogies, and magic systems. |
-| **🎨 UI Presets & Typewriter Audio** | 11 atmospheric visual presets (`Retro`, `Futuristic`, `Grim`, `Cozy`, `Fantastical`, `Horror`, etc.) and procedural Web Audio multi-generation typewriter sound synthesizer (10 acoustic models from 1890s Remington to IBM Selectric & Thock) with interactive showcase studio (`arcanum theme-studio`). |
-| **⚡ Word Count & Velocity Studio** | Unicode prose tokenization with CriticMarkup removal, spoken dialogue vs. narrative ratio, reading times, stateful Pomodoro sprint timers, rolling WPM velocity meters, real-time typewriter keystroke audio, and standalone offline HTML5 Velocity Studio (`arcanum words`, `arcanum sprint`). |
-| **🌿 Draft Branching & Lineage** | Multi-draft branching, immutable milestone snapshots, flexible non-prescriptive novel structures (`three_act`, `four_act`, `five_act`, `heros_journey`, `kishotenketsu`, `flat`, or custom), and interactive visual HTML draft lineage tree visualizer (`arcanum draft`). |
-| **✍️ Editorial & Churn Telemetry** | Structural markdown diffs (`arcanum diff`), editing density heatmaps (`arcanum heatmap`), and multi-manuscript catalog portfolio dashboards (`arcanum portfolio`). |
-| **🔄 Bidirectional Sync** | Seamless roundtrip Markdown ↔ DOCX synchronization (`arcanum sync`) and zero-dependency standard manuscript submission builder (`arcanum docx`). |
-| **🔮 Sovereign Core Engines & Toolchain** | 17 sovereign core Python engines alongside an integrated toolchain (PolyGlot, Gramps, Wonderdraft, Celestia, StarGen, Typst) across Linguistics, Genealogy, Cartography, Astrophysics, Pacing, Economy, and Narrative Geometry. |
-| **📚 Sub-Second Typesetting & Publishing** | Single-command compilation to print-ready PDF (Typst presets), clean EPUB (Pandoc), submission DOCX (William Shunn format), and multi-volume series omnibus compilation (`arcanum omnibus`, `arcanum publish`). |
-| **🔒 Immutable Safety & Cryptography** | POSIX/Windows atomic file writes (`atomic_write`), cross-platform file locking (`ArcanumLock`), SHA-256 backup verification, and GPG encryption (`arcanum backup`, `arcanum restore`, `arcanum snapshot`). |
-| **🩺 Unified Health Diagnostics** | Complete system health, toolchain inspection, and vault link consistency doctor (`arcanum doctor`). |
-
----
-
-## 🏛️ The Three Subsystems & Epistemic Safety
-
-To protect authorial sovereignty and prevent technical algorithms from masquerading as subjective aesthetic rules, Ars Arcanum strictly segregates all operations into three isolated subsystems:
-
-```mermaid
-graph TD
-    subgraph Subsystem1["Subsystem 1: Invariant Consistency Engine"]
-        S1["Deterministic Safety & Syntax"]
-        S1A["• Atomic File I/O (atomic_write)"]
-        S1B["• Cross-Platform Locking (ArcanumLock)"]
-        S1C["• SHA-256 Vault Checksums"]
-        S1D["• Author-Declared Rules ([AUTHOR RULE])"]
-        S1E["Fails builds (exit 1) on syntax/IO errors or --strict"]
-    end
-
-    subgraph Subsystem2["Subsystem 2: Selected Craft Lenses"]
-        S2["Advisory Telemetry & Reference Overlays"]
-        S2A["• Gary Provost Syntactic Waveforms"]
-        S2B["• Dwight Swain MRU Sequence Tracking"]
-        S2C["• Save the Cat & 3-Act Milestone Windows"]
-        S2D["• Whittaker Climate & Lanchester Dynamics"]
-        S2E["Always advisory (exit 0 default), dismissible via @intent"]
-    end
-
-    subgraph Subsystem3["Subsystem 3: Creative Ideation & Sparks"]
-        S3["Combinatorial Analogy & Generative Prompts"]
-        S3A["• Trope Inversions & Dialectical Sparks"]
-        S3B["• Mythic Resonance Conceptual Bridges"]
-        S3C["• Historical Anachronism Ideation"]
-        S3D["Clearly labeled with [SPECULATION] tags"]
-    end
-```
-
-### The 6-Tier Diagnostic Severity Taxonomy
-Diagnostics across all engines are categorized into six explicit severity tiers:
-1. **`CANON_ERROR`**: Provable contradiction against explicit author-declared facts.
-2. **`RULE_CONFLICT`**: Violation of an explicit author-declared world invariant (`[AUTHOR RULE]`).
-3. **`OBSERVATION`**: Objective statistical telemetry (word counts, sentence distributions, timeline ordering).
-4. **`LENS_NOTE`**: Insights generated by an opt-in craft lens (Save the Cat, Swain MRUs, Provost waveforms).
-5. **`SUGGESTION`**: Optional revision pathways presenting concrete tradeoffs.
-6. **`EXPERIMENT`**: Creative prompts and speculative brainstorming labeled with `[SPECULATION]`.
-
----
-
-## 📜 The Authorial Constitution
-
-Authors declare their narrative conventions, world axioms, and diagnostic filters in `constitution.yaml` or `constitution.json`:
-
-```yaml
----
-# ~/.config/ars-arcanum/config.json or World/Manuscript constitution.yaml
-canon:
-  authority: author
-  narrator_reliability: unreliable       # Allows narrative ambiguity
-  allow_unresolved_mysteries: true
-
-style:
-  passive_voice: observe                 # "observe" | "allow"
-  repetition: observe                    # "observe" | "allow"
-  filter_verbs: observe
-
-structure:
-  framework: three_act                   # "none" | "three_act" | "kishotenketsu" | "heros_journey"
-  mode: descriptive                      # Observational telemetry only
-
-magic:
-  modality: mythic                       # "mythic" | "soft" | "rationalist" | "unconstrained"
-  enforce_thermodynamics: false
-
-continuity:
-  timeline: flexible
-  preserve_poetic_variation: true        # Permits metaphorical eye/hair color variations
-
-diagnostics:
-  default_severity: advisory             # Universal exit code 0 default
-  suppressed_rules: []                   # Rule IDs to silence
----
-```
-
----
-
-## ⚡ 5-Minute Quickstart
-
-### Prerequisites
-- Python 3.10+ (Standard Library only — zero pip packages required)
-- *Optional recommended tools:* Git, Pandoc, Typst, Obsidian
-
-### 1. Installation
-
-**Linux / macOS:**
-```bash
-git clone https://github.com/ars-arcanum/Ars-Arcanum.git Ars-Arcanum
-cd Ars-Arcanum
-bash scripts/setup_arcanum.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-git clone https://github.com/ars-arcanum/Ars-Arcanum.git Ars-Arcanum
-cd Ars-Arcanum
-powershell -ExecutionPolicy Bypass -File scripts\setup_arcanum.ps1
-```
-
-### 2. Launching CLI Commands
+## ⚡ Quick Start & Core CLI Workflows
 
 ```bash
-# 1. Unified system health & toolchain diagnostics
-python scripts/arcanum doctor
+# 1. Unified Continuity Suite & Live Obsidian Dashboard (_Arcanum_Diagnostics.md)
+python scripts/arcanum continuity-suite ~/Universes/Reliquary/
 
-# 2. Manuscript prose word count, dialogue ratio & velocity studio
-python scripts/arcanum words Manuscript/ --pov --dialogue --html dist/velocity_studio.html
+# 2. Phase-Aware Effort Logging & Career Velocity Forecaster (1.0x Draft, 0.5x Lore, 0.2x Revision, 0.0x Premature Edit Block)
+python scripts/arcanum sprint-effort --workspace ~/Universes/Reliquary/ --book "Prisoner of Sand Sea" --stage Drafting --draft 2000 --worldbuilding 400
 
-# 3. Stateful Pomodoro drafting sprint & habit telemetry
-python scripts/arcanum sprint start Manuscript/ --target 500 --minutes 25
-python scripts/arcanum sprint status Manuscript/
-python scripts/arcanum sprint stop Manuscript/
-python scripts/arcanum sprint stats Manuscript/
+# 3. Epistemic POV & Spoiler Firewall (Flags premature knowledge leaks across chapters)
+python scripts/arcanum validate-epistemic ~/Manuscripts/Prisoner-of-Sand-Sea/
 
-# 4. Multi-draft branching, immutable milestones & visual lineage
-python scripts/arcanum draft new Manuscript/ Draft-02 --parent Draft-01 --milestone "Revision"
-python scripts/arcanum draft tree Manuscript/ --html dist/draft_lineage.html
+# 4. Custom Planetary Calendar & Biome Route Physics Auditor
+python scripts/arcanum timeline-audit ~/Universes/Reliquary/
 
-# 5. Structural markdown diff visualizer
-python scripts/arcanum diff Draft-01 Draft-02 --html diff_report.html
+# 5. PolyGlot (.pgd / XML) Conlang Importer & Phonotactic Syllable Linter
+python scripts/arcanum conlang-check --pgd ~/Universes/Reliquary/Languages/sand_tongue.pgd --language "Sand Tongue"
 
-# 6. Manuscript revision density & editing churn heatmap
-python scripts/arcanum heatmap --chapters 1-5 --export-html heatmap.html
+# 6. Hard Magic & Sci-Fi Resource Conservation Ledger (Tracks ether vials, mana, delta-v)
+python scripts/arcanum ledger-audit ~/Manuscripts/Prisoner-of-Sand-Sea/
 
-# 7. Multi-manuscript portfolio catalog dashboard
-python scripts/arcanum portfolio --html portfolio.html
+# 7. Interactive Multi-POV Narrative Braid & Drought Visualizer (Exports CSP-locked SVG/HTML)
+python scripts/arcanum braid ~/Manuscripts/Prisoner-of-Sand-Sea/ --html dist/narrative_braid.html
 
-# 8. Bidirectional Markdown <-> DOCX synchronization
-python scripts/arcanum sync pull --docx manuscript.docx
+# 8. Two-Level SHA-256 Paragraph-Hash Diffing & Excised Scrap Archiver (>=50 words -> Scraps/)
+python scripts/arcanum diff-fast Draft-01/01_Chapter.md Draft-02/01_Chapter.md --scraps-dir Scraps/
 
-# 9. Multi-volume series omnibus & publication compiler
-python scripts/arcanum omnibus compile --format epub
+# 9. Bidirectional Markdown CriticMarkup <-> Word Tracked Changes (.docx) Sync
+python scripts/arcanum docx-tracked export Draft-02/01_Chapter.md Export/01_Chapter_Tracked.docx
+python scripts/arcanum docx-tracked pull Export/01_Chapter_Edited.docx Draft-02/01_Chapter.md
+
+# 10. Multi-Format Publishing (Typst PDF, Pandoc EPUB3, Shunn DOCX) & GPG-Verified Backups
 python scripts/arcanum publish Manuscript/ --format all
-
-# 10. Cryptographically verified standalone archive
 python scripts/arcanum backup --tag milestone-1
 ```
 
----
+## 📚 Documentation Matrix
 
-## 🗂️ Sovereign Vault Structure
-
-```
-~/Universes/<UniverseName>/
-├── universe.yaml              → Overarching cosmological container
-└── <WorldName>/               → Obsidian-compatible World Bible lore vault
-    ├── world.yaml             → World manifest & axioms
-    ├── constitution.yaml      → Local Authorial Constitution
-    ├── Characters/            → Character dossiers, arcs, and voice profiles
-    ├── Locations/             → Regional climate biomes, routes, and maps
-    ├── Factions/              → Diplomatic matrices, treaties, and vassals
-    ├── Magic-Technology/      → Magic modalities, costs, and limits
-    ├── Bestiary/              → Species, ecosystems, and food webs
-    ├── Artifacts/             → Relics, focal items, and provenance
-    ├── Cosmology/             → Pantheons, astrophysics, and prophecies
-    ├── History/               → Timelines, causal DAGs, and branches
-    ├── Languages/             → Conlang morphosyntax and glossaries
-    └── .obsidian/             → Pre-configured offline Obsidian workspace (32 plugins)
-
-~/Manuscripts/<ManuscriptName>/
-├── manuscript.yaml            → Links Universe, World Bible, and active book
-├── constitution.yaml          → Manuscript-specific craft constitution
-├── Book-01/                   → Dedicated repository container
-│   ├── Draft-01/
-│   │   ├── 01_Act_I/
-│   │   │   ├── 01_Chapter.md  → Chapter markdown source with scene directives
-│   │   │   └── 02_Chapter.md
-│   │   └── 02_Act_II/
-│   └── Export/                → PDF, EPUB, and submission DOCX exports
-```
-
----
-
-## 🔍 Verification & Engineering Gates
-
-Ars Arcanum enforces strict deterministic quality gates across POSIX and Windows:
-
-```bash
-# 1. Full 56-module parallel test discovery (486 tests, 0 failures)
-python scripts/test_parallel.py
-
-# 2. Strict Ruff linter pass (0 violations)
-ruff check .
-
-# 3. Strict Mypy static type checking across all 117 source files
-mypy --explicit-package-bases scripts tests
-
-# 4. Coverage Threshold Enforcement (>= 80%, currently 80%+)
-coverage run -m unittest discover tests; coverage report --fail-under=80
-
-# 5. Canonical POSIX Integration Verification Harness
-bash scripts/verify.sh
-```
-
-
----
-
-## 📖 Documentation Index
-
-- **[📖 Author's Craft Manual](docs/AUTHOR_MANUAL.md)** — Exhaustive guide to sovereign worldbuilding and narrative drafting.
-- **[🔌 External Tools & 32-Plugin Suite](docs/guides/EXTERNAL_TOOLS_AND_PLUGINS.md)** — Complete guide to all integrated external software and pre-configured Obsidian plugins.
-- **[🧩 Obsidian Plugin Catalog](docs/guides/OBSIDIAN_PLUGINS.md)** — Exhaustive directory of the 32 pre-installed Obsidian plugins.
-- **[💻 Software Catalog](docs/guides/SOFTWARE_CATALOG.md)** — Comprehensive software directory, installation vectors, and license matrix.
-- **[🏛️ System Architecture Blueprint](docs/codebase/ARCHITECTURE.md)** — C4 diagrams, Three Subsystem breakdown, and engine topology.
-- **[📚 Craft Logic Encyclopedia](docs/ENGINE_LOGIC_ENCYCLOPEDIA.md)** — Historical lineages, mathematical models, and tradeoffs for sovereign engines.
-- **[⚡ Complete Setup & Installation Guide](docs/SETUP_GUIDE.md)** — Step-by-step installation instructions for Linux, macOS, and Windows.
-- **[🔒 Security & Threat Model](docs/THREAT_MODEL.md)** — Air-gapped CSP policies, path traversal defense, and cryptographic guarantees.
-- **[📚 Master Academic & Craft References](REFERENCES.md)** — 340+ verified academic and literary citations.
-
----
-
-## 📄 License & Intellectual Property
-
-Ars Arcanum is open-source software licensed under the **[MIT License](LICENSE)**.  
-All creative works, manuscripts, world bibles, and lore created using Ars Arcanum remain the **100% sovereign intellectual property of the author**, free from any licensing claim, telemetry tracking, or cloud retention.
+| Guide / Reference Manual | Primary Focus |
+| :--- | :--- |
+| [Start Here (`docs/START_HERE.md`)](docs/START_HERE.md) | 15-minute onboarding tour from vault scaffolding to first sprint |
+| [Author Manual (`docs/AUTHOR_MANUAL.md`)](docs/AUTHOR_MANUAL.md) | Complete day-to-day workflow guide for novelists and worldbuilders |
+| [CLI Cheatsheet (`docs/CHEATSHEET.md`)](docs/CHEATSHEET.md) | Fast command reference for all core, continuity, and publishing engines |
+| [System Architecture (`docs/ARCHITECTURE.md`)](docs/ARCHITECTURE.md) | Master blueprint of the 3-subsystem model, DAL caching, and security bounds |
+| [Modernization Plan (`docs/MODERNIZATION_PLAN.md`)](docs/MODERNIZATION_PLAN.md) | Phases 1–4 architectural refactoring and continuity compiler specifications |
+| [Agentic Manifesto (`AGENTS.md`)](AGENTS.md) | Invariant engineering contracts, security guarantees, and momentum queues |
+| [Threat Model (`docs/THREAT_MODEL.md`)](docs/THREAT_MODEL.md) | STRIDE-Lite security analysis, subprocess sandboxing, and CSP enforcement |

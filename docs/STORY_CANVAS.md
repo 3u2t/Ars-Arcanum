@@ -196,3 +196,17 @@ arcanum canvas --apply-manifest .arcanum/reordered_manifest.json --backup
 - **Vladimir Nabokov, *Lolita* (1955)**: Written entirely on index cards shuffled across hotel rooms, achieving unparalleled structural and linguistic density.
 - **Pixar, *Inside Out* (2015)**: Masterpiece developed through dozens of iterative beat boards mapping abstract emotional concepts into visual color palettes.
 - **Christopher Nolan, *Dunkirk* (2017)**: Nolan's famous hand-drawn cross-temporal tripartite visual canvas (Land: 1 week, Sea: 1 day, Air: 1 hour) synchronized into a single structural climax.
+
+
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
+
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

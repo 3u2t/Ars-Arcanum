@@ -190,3 +190,17 @@ status_by_volume:
 - **Brandon Sanderson, *The Cosmere* (2005–Present)**: 20+ novels across multiple planetary systems governed by a single overarching metaphysical system (Investiture, Shards of Adonalsium).
 - **Steven Erikson & Ian C. Esslemont, *Malazan Book of the Fallen* (1999–Present)**: A sprawling 10-volume military fantasy epic spanning millennia of archaeological and geopolitical history.
 - **George R.R. Martin, *The World of Ice & Fire* (2014)**: Fictional historical chronicle demonstrating intentional conflicting historical accounts (Archmaester Gyldayn vs Mushroom).
+
+
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
+
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

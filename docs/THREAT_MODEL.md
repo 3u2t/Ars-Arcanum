@@ -1,99 +1,57 @@
-# Ars Arcanum Threat Model & Security Posture (STRIDE-Lite)
+# Ars Arcanum Security & Threat Model (`STRIDE-Lite`)
 
-**Version:** 0.1.0  
-**Scope:** Core CLI (`arcanum`), Scaffolding Scripts, 47 Deterministic Python Library Engines (`scripts/lib/`), GTK Desktop App, Studio Hub Local HTTP Server (`scripts/lib/studio_hub.py`), Typesetting Bridges (Typst/Pandoc), and Storage/Backup Subsystems.  
-**Target Environment:** Local single-user cross-platform desktop workstations (Linux Mint, Ubuntu, Debian, Arch, Fedora, Windows).
+## Overview: STRIDE-Lite Analysis for a Sovereign Local-First Authoring OS
 
----
+Ars Arcanum processes untrusted external inputs in three primary workflows: importing third-party `.docx` files from editors (`docx_tracked_changes.py` / `docx_sync.py`), importing PolyGlot `.pgd` lexicons (`conlang_linter.py`), and executing custom user plugins (`.arcanum/plugins/*.py` via `plugin_sandbox.py`). Below is our **STRIDE-Lite** threat matrix and deterministic mitigations.
 
-## 1. System Architecture & Trust Boundaries
+## Spoofing Identity
 
-Ars Arcanum operates exclusively as a **local-first desktop platform**. It does not expose public network ports or transmit user prose or metadata to cloud backends. When launched, the interactive **Studio Hub** (`arcanum hub`) binds exclusively to local loopback (`127.0.0.1` / `localhost` / `[::1]`).
+- **Risk**: Malicious plugin scripts or imported archives attempting to masquerade as core engines or spoof author revision attribution in `.arcanum/sprint_log.jsonl`.
+- **Mitigation**: `plugin_sandbox.py` executes third-party plugins in an isolated `python3 -I -B` subprocess with a sanitized environment (`PATH=/usr/bin:/bin`, no user `PYTHONPATH`), and `backup.py` signs and verifies archives with SHA-256 manifests and optional GPG encryption.
 
-### Key Trust Boundaries:
-1. **User Working Tree (`~/Universes/`, `~/Manuscripts/`)**: Trusted local filesystem where author prose, notes, and manifests are stored and versioned via local Git.
-2. **Local Studio Hub Interface (`http://127.0.0.1:8765`)**: Local HTTP/REST boundary providing interactive visualizations, telemetry inspection, and scoped craft engine execution under strict Host/Origin gating and an authorized engine allowlist.
-3. **Untrusted External Inputs**:
-   - Word Documents (`.docx`) imported from beta readers, co-authors, or editors.
-   - Restored Backup Archives (`.tar.gz`) from external or shared drives.
-   - Markdown notes containing arbitrary user text, YAML frontmatter, and WikiLinks (`[[...]]`).
-   - Community Obsidian Plugin configurations (`.obsidian/`).
-4. **Privileged Installer Surface**: `setup_arcanum.sh` (multi-distribution setup script).
-5. **Offline Viewing Sandbox**: Generated static HTML visualization reports and charts opened in local web browsers.
+## Tampering with Data
 
+- **Risk**: Interrupted writes, concurrent CLI invocations, or rogue scripts corrupting manuscript chapters or mutating locked historical drafts (`Draft-01`).
+- **Mitigation**: Mandatory `atomic_write()` (`fs_utils.py` / `vault_index.py`) stages writes to temporary files and commits via `os.replace` (which safely breaks OS hardlinks created by `promote_draft_hardlinked()` without mutating parent drafts), paired with cross-platform `ArcanumLock` advisory locking (`lockfile.py`).
+
+## Repudiation
+
+- **Risk**: Unattributed destructive edits across multi-draft revisions or unverified backup archives.
+- **Mitigation**: Immutable `.locked` seals and `.draft_lineage.json` provenance manifests on promoted drafts (`diff_core.py`), automatic archival of excised cuts `>= 50` words into `Scraps/`, and cryptographic SHA-256 manifest verification in `backup.py`.
+
+## Information Disclosure
+
+- **Risk**: Path traversal attacks (`../../etc/passwd`) via crafted wikilinks or plugin paths, or silent exfiltration of unpublished manuscripts via embedded remote assets in HTML reports.
+- **Mitigation**: Strict `is_safe_subpath(root, candidate)` checks before every read/write operation (`PathSecurityError`), and CI enforcement verifying zero external CDN URLs across all engines.
+
+## Denial of Service
+
+- **Risk**: Quadratic $O(N^2)$ diff freezes on 200,000-word novels, infinite loops in user plugins, or recursive directory traversal into `.git`/`Backups`.
+- **Mitigation**: Two-level SHA-256 paragraph-hash skipping in `diff_core.py` and `vault_index.py`, in-place pruning of excluded directories during `os.walk`, and strict wall-clock timeouts (`timeout_seconds=5.0`) + 1 MB stdout caps in `plugin_sandbox.py`.
+
+## Elevation of Privilege
+
+- **Risk**: Arbitrary code execution when discovering or running custom plugins in `.arcanum/plugins/*.py`.
+- **Mitigation**: `run_plugin_sandboxed()` (`scripts/lib/plugin_sandbox.py`) isolates plugin execution in a separate OS process (`sys.executable -I -B`) communicating strictly over serialized JSON `stdin`/`stdout`.
+
+## Content Security Policy
+
+Every static HTML visualizer (`narrative_braid.py`, `portfolio.py`, `revision_heatmap.py`, `manuscript_diff.py`, `codex_export.py`) embeds a strict **Content Security Policy** meta header:
+
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:;">
 ```
-[ External DOCX / Backup Archives / Community Plugins ] (Untrusted)
-                         │
-                         ▼ (Sanitization & Validation Barrier)
-[ Ars Arcanum Core Engines: docx_sync, world_doctor, restore, cli ]
-                         │
-                         ▼ (Atomic Writes & Local Git)
-[ Local Author Workspaces: ~/Universes, ~/Manuscripts ] (Trusted)
-                         ▲
-                         │ (Loopback HTTP / Scope API / Allowlist Runner)
-[ Studio Hub Local Server: 127.0.0.1 / localhost ]
-```
 
----
 
-## 2. STRIDE-Lite Threat Analysis & Mitigations
+<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
+## Phase 1–4 Production CLI & Continuity Cross-Reference
 
-### 1. Spoofing Identity (S)
-* **Threat S1: Git Author Spoofing during Scaffolding.**
-  - *Risk:* Automated scaffolding commits using an arbitrary or misleading identity, overwriting author attribution.
-  - *Mitigation:* Scaffolding scripts query `git config user.name` and `git config user.email`. If configured, the user's authentic local Git identity is used. If unset, a neutral tool identity (`Ars Arcanum Studio <arcanum@local>`) is applied.
-
-### 2. Tampering with Data (T)
-* **Threat T1: Power Loss or Crash during File Write (Data Corruption).**
-  - *Risk:* Mid-write crashes corrupting manuscripts, chapters, or world manifests.
-  - *Mitigation:* All write operations across all library modules use `atomic_write()` (`scripts/lib/_bootstrap.py`), writing to a temporary file in the same parent directory, flushing, syncing (`fsync`), and atomically replacing via `os.replace`.
-* **Threat T2: Silent Prose Loss during DOCX ↔ Markdown Synchronization.**
-  - *Risk:* Asymmetrical mtime updates causing newer Markdown prose to be overwritten by older DOCX files.
-  - *Mitigation:* Three-way SHA-256 state tracking (`.sync_state.json`). If both Markdown and DOCX diverge independently, the engine refuses in-place overwrite and branches to `<chapter>.conflict_<timestamp>.md`.
-* **Threat T3: Backup Archive Tampering & Silent Overwrites.**
-  - *Risk:* Accidental corruption or byte alteration in `.tar.gz` backups; silent overwriting of working directory chapters on restore.
-  - *Mitigation:* Every archive generation emits a companion `.sha256` digest sidecar verified before any restoration drill. `restore.py` enforces fail-closed SHA-256 validation and refuses to extract into non-empty directories unless `--force` is explicitly specified.
-
-### 3. Repudiation (R)
-* **Threat R1: Untracked Draft Modifications.**
-  - *Risk:* Authors unable to identify what changed between draft revisions.
-  - *Mitigation:* Automatic draft milestone snapshotting (`arcanum draft`) and fine-grained visual redline diff reporting (`manuscript_diff.py`).
-
-### 4. Information Disclosure (I)
-* **Threat I1: Accidental Cloud Leakage of Unpublished Manuscripts.**
-  - *Risk:* Background telemetry or third-party cloud analytics uploading creative IP.
-  - *Mitigation:* Zero cloud telemetry, zero remote dependencies, zero analytics scripts. 100% offline air-gapped architecture.
-* **Threat I2: XSS in Generated HTML Reports.**
-  - *Risk:* Malicious script execution when rendering HTML corkboards, timelines, or codices.
-  - *Mitigation:* Strict Content Security Policy declared in all HTML outputs:
-    ```html
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; media-src data: blob:;">
-    ```
-
-### 5. Denial of Service (D)
-* **Threat D1: XML Entity Expansion Bomb (Billion Laughs) in DOCX Imports.**
-  - *Risk:* Malicious DOCX input consuming infinite memory/CPU via recursive XML entity definitions.
-  - *Mitigation:* DOCTYPE and ENTITY scanning on all incoming XML streams before AST processing (`docx_sync.py`, `importer.py`).
-* **Threat D2: Path Traversal / Directory Injection.**
-  - *Risk:* User-provided names containing `../` overwriting arbitrary system files.
-  - *Mitigation:* Strict regex token validation `^[A-Za-z0-9_-]+$` enforced across all volume names, draft identifiers, and world targets (`_bootstrap.py`).
-
-### 6. Elevation of Privilege & Web Perimeter (E)
-* **Threat E1: Archive Restore Symlink & Hook Injection.**
-  - *Risk:* Malicious backup archives extracting symlinks pointing to sensitive system files or placing executable `.git/hooks`.
-  - *Mitigation:* Pure-Python archive extractor (`restore.py`) strictly filters out symlinks escaping the destination root, hardlinks, FIFOs, device nodes, and rejects any paths within `.git/hooks` or `.git/config`.
-* **Threat E2: Cross-Origin / DNS Rebinding Attacks on Studio Hub Local Server.**
-  - *Risk:* Malicious website in author's browser sending cross-origin POST requests to `http://127.0.0.1:8765/api/engine/run` to execute arbitrary commands.
-  - *Mitigation:* 
-    - Strict `Host` header validation rejecting DNS rebinding (allowing only `localhost`, `127.0.0.1`, `::1`, `[::1]`).
-    - Strict `Origin` header validation rejecting `Origin: null` and cross-origin domains.
-    - Strict Engine Execution Allowlist in `_execute_scoped_engine`: only registered craft modules in the static allowlist can be triggered; unlisted modules and system operations are rejected.
-    - Global thread execution mutex preventing concurrent command stream interleaving.
-
----
-
-## 3. Recommended Reading & Security References
-
-1. **Howard, Michael & Lipner, Steve** (2006). *The Security Development Lifecycle: SDL: A Process for Developing Demonstrably More Secure Software*. Microsoft Press. (STRIDE methodology).
-2. **Scarfone, Karen et al.** (2008). *Guide to Storage Security* (NIST SP 800-111). National Institute of Standards and Technology.
-3. **OWASP Top 10** (2021). *Open Web Application Security Project*. (Injection, Broken Access Control, and Insecure Design mitigations).
+- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
+- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
+- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
+- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
+- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
+- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
+- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
+- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)
