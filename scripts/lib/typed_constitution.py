@@ -1,30 +1,31 @@
 """Strict Typed Authorial Constitution & 3-Tier Policy Cascade (Phase 2B Refactor).
 
 Upgrades `scripts/lib/constitution.py` by replacing untyped `dict[str, Any]` payloads with
-frozen `@dataclass` schemas (allowing strict Mypy enforcement in `mypy.ini`) and adding
-explicit `!rule_id` negation support so child constitutions (World or Manuscript level)
-can disable inherited diagnostic rules from parent constitutions.
+frozen `@dataclass` schemas and adding explicit `!rule_id` negation support so child
+constitutions (World or Manuscript level) can disable inherited diagnostic rules.
 
 Repository Target: `scripts/lib/typed_constitution.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
+import argparse
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
-    from scripts.lib.vault_index import parse_frontmatter
+    from lib.vault_index import parse_frontmatter
 except ImportError:
     from vault_index import parse_frontmatter
 
 
 @dataclass(frozen=True)
 class CraftPolicyThresholds:
-    """Quantitative thresholds for Subsystem 2 advisory diagnostics (`REV-*`, pacing, POV drought)."""
+    """Quantitative thresholds for Subsystem 2 advisory diagnostics."""
 
     max_chapter_words: int = 6_500
     min_chapter_words: int = 1_200
@@ -35,7 +36,7 @@ class CraftPolicyThresholds:
 
 @dataclass(frozen=True)
 class AuthorialConstitution:
-    """Strictly typed representation of an resolved 3-tier Authorial Constitution."""
+    """Strictly typed representation of a resolved 3-tier Authorial Constitution."""
 
     scope_name: str
     sovereign_offline_only: bool = True
@@ -82,13 +83,7 @@ def merge_rule_lists_with_negation(
     base_rules: Iterable[str] | frozenset[str],
     override_directives: list[str] | tuple[str, ...],
 ) -> frozenset[str]:
-    """Merge rule lists across constitution tiers while honoring `!RULE_ID` removal directives.
-
-    Example:
-        base_rules = {"REV-101", "REV-102", "REV-103"}
-        override_directives = ["!REV-101", "EPI-202"]
-        -> returns frozenset({"REV-102", "REV-103", "EPI-202"})
-    """
+    """Merge rule lists across constitution tiers while honoring `!RULE_ID` removal directives."""
     resolved = set(base_rules)
     for raw_item in override_directives:
         token = str(raw_item).strip()
@@ -111,9 +106,7 @@ def resolve_constitution_cascade(
     world_dict: dict[str, Any] | None = None,
     manuscript_dict: dict[str, Any] | None = None,
 ) -> AuthorialConstitution:
-    """Resolve the 3-tier policy cascade (Global -> World -> Manuscript) into a strictly typed
-    `AuthorialConstitution` instance.
-    """
+    """Resolve the 3-tier policy cascade (Global -> World -> Manuscript) into an `AuthorialConstitution`."""
     base = AuthorialConstitution(scope_name="Global")
     active_rules = set(base.active_rules)
     banned_idioms = set(base.banned_idioms)
@@ -174,3 +167,31 @@ def load_yaml_constitution_file(path: Path) -> dict[str, Any]:
     wrapped = raw if raw.lstrip().startswith("---") else f"---\n{raw}\n---\n"
     parsed, _ = parse_frontmatter(wrapped)
     return parsed
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum typed-constitution`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum typed-constitution",
+        description="Resolve and inspect the 3-tier Authorial Constitution cascade.",
+    )
+    parser.add_argument("--global-config", type=Path, default=None, help="Global constitution.yaml path")
+    parser.add_argument("--world-config", type=Path, default=None, help="World constitution.yaml path")
+    parser.add_argument("--manuscript-config", type=Path, default=None, help="Manuscript constitution.yaml path")
+    args = parser.parse_args(argv)
+
+    g_dict = load_yaml_constitution_file(args.global_config) if args.global_config else None
+    w_dict = load_yaml_constitution_file(args.world_config) if args.world_config else None
+    m_dict = load_yaml_constitution_file(args.manuscript_config) if args.manuscript_config else None
+
+    resolved = resolve_constitution_cascade(
+        global_dict=g_dict,
+        world_dict=w_dict,
+        manuscript_dict=m_dict,
+    )
+    sys.stdout.write(json.dumps(resolved.to_dict(), indent=2) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

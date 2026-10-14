@@ -1,29 +1,22 @@
-"""PolyGlot Conlang Lexicon Importer, Phonotactic Linter & Glossary Compiler (`arcanum conlang check`).
+"""PolyGlot Conlang Lexicon Importer, Phonotactic Linter & Glossary Compiler (`arcanum conlang-check`).
 
 Bridges external conlang tools like PolyGlot (`.pgd` ZIP/XML dictionaries or raw `.xml` exports)
-with Ars Arcanum's `Languages/` World Bible directory and `configs/plugins/speculative_naming/`:
-1. Zero-Dependency PolyGlot Importer (`import_polyglot_lexicon`):
-   - Reads `.pgd` archives (which package `PGDictionary.xml` inside a standard ZIP container)
-     or standalone XML files using stdlib `zipfile` and `xml.etree.ElementTree`.
-2. Phonotactic & Syllable Structure Validator (`CON-401` & `CON-402`):
-   - Validates coined proper nouns and in-manuscript conlang phrases against user-defined phoneme
-     inventories (consonants `C`, vowels `V`, liquids `L`, sibilants `S`) and banned clusters.
-3. Omnibus Pronunciation Appendix Generator (`compile_glossary_markdown`):
-   - Produces a sorted Markdown pronunciation and etymology table ready for `omnibus.py`.
+with Ars Arcanum's `Languages/` World Bible directory and `configs/plugins/speculative_naming/`.
 
 Repository Target: `scripts/lib/conlang_linter.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
-import itertools
-import re
-import xml.etree.ElementTree as ET
-import zipfile
+import argparse
 from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
+import re
+import sys
 from typing import Any
+import xml.etree.ElementTree as ET  # nosec B405
+import zipfile
 
 
 @dataclass(frozen=True)
@@ -42,8 +35,8 @@ class PhonotacticSpec:
     """Phonotactic constraints for a constructed language in `Languages/<Conlang>.yaml`."""
 
     language_name: str
-    allowed_consonants: tuple[str, ...] = ("p", "t", "k", "s", "m", "n", "l", "r", "w", "j", "d", "b", "g")
-    allowed_vowels: tuple[str, ...] = ("a", "e", "i", "o", "u")
+    allowed_consonants: tuple[str, ...]
+    allowed_vowels: tuple[str, ...]
     banned_clusters: tuple[str, ...] = ()
     allow_vowel_hiatus: bool = False
     require_vowel_nucleus: bool = True
@@ -53,7 +46,7 @@ class PhonotacticSpec:
 class ConlangViolation:
     """Phonotactic or lexicon compliance violation."""
 
-    rule_id: str  # "CON-401" | "CON-402"
+    rule_id: str
     word: str
     language_name: str
     message: str
@@ -71,7 +64,7 @@ def import_polyglot_lexicon(source_path: Path) -> list[ConlangLexeme]:
     else:
         xml_bytes = resolved.read_bytes()
 
-    root = ET.fromstring(xml_bytes)  # noqa: S314
+    root = ET.fromstring(xml_bytes)  # noqa: S314  # nosec B314
     lexicon_node = root.find("lexicon")
     word_nodes = lexicon_node.findall("word") if lexicon_node is not None else root.findall(".//word")
 
@@ -109,7 +102,6 @@ def validate_word_phonotactics(word: str, spec: PhonotacticSpec) -> list[Conlang
     )
     vowel_set = set(spec.allowed_vowels)
 
-    # Tokenize word greedily into multi-character or single-character graphemes
     idx = 0
     tokens: list[str] = []
     while idx < len(cleaned):
@@ -161,7 +153,7 @@ def validate_word_phonotactics(word: str, spec: PhonotacticSpec) -> list[Conlang
             )
 
     if not spec.allow_vowel_hiatus:
-        for prev_t, curr_t in itertools.pairwise(tokens):
+        for prev_t, curr_t in zip(tokens, tokens[1:]):
             if prev_t in vowel_set and curr_t in vowel_set and prev_t != curr_t:
                 violations.append(
                     ConlangViolation(
@@ -210,49 +202,38 @@ def audit_conlang_terms(words: list[str], spec: PhonotacticSpec) -> dict[str, An
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum conlang-check`."""
-    import argparse
-    import json
-    import sys
-
+    """CLI entrypoint for `arcanum conlang-check` / `arcanum conlang-linter`."""
     parser = argparse.ArgumentParser(
         prog="arcanum conlang-check",
-        description="Audit manuscript coined words against phonotactic rules or import PolyGlot dictionaries.",
+        description="Validate constructed language terms or import a PolyGlot (.pgd/.xml) lexicon.",
     )
-    parser.add_argument("words_or_file", nargs="*", help="Words to check or path to .pgd/.xml dictionary")
-    parser.add_argument("--import-pgd", type=Path, help="Path to PolyGlot .pgd archive or XML file to import")
-    parser.add_argument("--glossary", type=Path, help="Export compiled Markdown glossary to file")
-    parser.add_argument("--language", default="Standard Conlang", help="Language name")
-    parser.add_argument("--json", action="store_true", help="Output JSON results")
+    parser.add_argument("--pgd", type=Path, default=None, help="Optional PolyGlot .pgd or .xml dictionary to import")
+    parser.add_argument("--language", default="High Arcanum", help="Conlang name")
+    parser.add_argument("--consonants", default="k,l,th,s,r,n,m,t,v,d,z", help="Comma-separated consonant inventory")
+    parser.add_argument("--vowels", default="a,e,i,o,u", help="Comma-separated vowel inventory")
+    parser.add_argument("--banned-clusters", default="sr,zt", help="Comma-separated banned clusters")
+    parser.add_argument("words", nargs="*", help="Words to check against phonotactic rules")
     args = parser.parse_args(argv)
 
-    if args.import_pgd or (args.words_or_file and Path(args.words_or_file[0]).suffix in (".pgd", ".xml")):
-        file_path = args.import_pgd or Path(args.words_or_file[0])
-        lexemes = import_polyglot_lexicon(file_path)
-        glossary_md = compile_glossary_markdown(args.language, lexemes)
-        if args.glossary:
-            args.glossary.write_text(glossary_md, encoding="utf-8")
-            sys.stdout.write(f"✓ Exported {len(lexemes)} lexemes to {args.glossary}\n")
-        elif args.json:
-            sys.stdout.write(json.dumps([asdict(item) for item in lexemes], indent=2) + "\n")
-        else:
-            sys.stdout.write(f"✓ Imported {len(lexemes)} lexemes from {file_path.name}\n\n")
-            sys.stdout.write(glossary_md)
-        return 0
+    spec = PhonotacticSpec(
+        language_name=args.language,
+        allowed_consonants=tuple(c.strip() for c in args.consonants.split(",") if c.strip()),
+        allowed_vowels=tuple(v.strip() for v in args.vowels.split(",") if v.strip()),
+        banned_clusters=tuple(b.strip() for b in args.banned_clusters.split(",") if b.strip()),
+    )
 
-    words = args.words_or_file or ["sample", "word"]
-    spec = PhonotacticSpec(language_name=args.language)
-    res = audit_conlang_terms(words, spec)
-    if args.json:
-        sys.stdout.write(json.dumps(res, indent=2) + "\n")
-    else:
-        sys.stdout.write(f"Ars Arcanum Conlang Linter — {args.language}\n")
-        sys.stdout.write("-" * 50 + "\n")
-        status = "PASSED" if res["passed"] else "VIOLATIONS FOUND"
-        sys.stdout.write(f"Checked {res['words_checked']} word(s): {status}\n")
-        for v in res["violations"]:
-            sys.stdout.write(f"  [{v['rule_id']}] {v['message']}\n")
-    return 0 if res["passed"] else 1
+    target_words = list(args.words)
+    lexemes: list[ConlangLexeme] = []
+    if args.pgd is not None and args.pgd.exists():
+        lexemes = import_polyglot_lexicon(args.pgd)
+        target_words.extend(lx.con_word for lx in lexemes)
+
+    report = audit_conlang_terms(target_words, spec)
+    if lexemes:
+        report["imported_lexemes"] = len(lexemes)
+        report["glossary_markdown"] = compile_glossary_markdown(args.language, lexemes)
+    sys.stdout.write(json.dumps(report, indent=2) + "\n")
+    return 0 if report["passed"] else 1
 
 
 if __name__ == "__main__":

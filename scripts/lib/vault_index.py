@@ -9,27 +9,26 @@ invariant engineering contracts (`AGENTS.md`):
 - Thread-safe LRU + persistent `.arcanum_cache.json` (`CACHE_VERSION = 3`) memoization.
 - Paragraph-aware prose/dialogue/CJK word counting and block-scalar-capable frontmatter parsing.
 
-Repository Target: `scripts/lib/vault_index.py` (or `src/arcanum/core/vault_index.py`)
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
+Repository Target: `scripts/lib/vault_index.py`
 """
 
 from __future__ import annotations
 
+import argparse
+from collections import OrderedDict
+from collections.abc import Iterable, Iterator
+from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 import logging
 import os
+from pathlib import Path
 import re
 import sys
 import tempfile
 import threading
-from collections import OrderedDict
-from collections.abc import Iterable, Iterator
-from dataclasses import asdict, dataclass, field
-from pathlib import Path
 from typing import Any
 
-# Unify module singleton identity across `scripts.lib.vault_index`, `lib.vault_index`, and `vault_index`
 for _alias in ("vault_index", "lib.vault_index", "scripts.lib.vault_index"):
     sys.modules.setdefault(_alias, sys.modules[__name__])
 
@@ -52,7 +51,6 @@ DEFAULT_EXCLUDED_DIRS: frozenset[str] = frozenset(
     }
 )
 
-# Regex patterns hardened for multi-paragraph dialogue, CriticMarkup, CJK, and thematic breaks
 _FRONTMATTER_BOUNDARY_RE = re.compile(r"\A---\s*\r?\n(.*?)\r?\n---\s*(?:\r?\n|\Z)", re.DOTALL)
 _CRITIC_DELETE_RE = re.compile(r"\{--.*?--\}", re.DOTALL)
 _CRITIC_COMMENT_RE = re.compile(r"\{>>.*?<<\}", re.DOTALL)
@@ -83,12 +81,8 @@ def is_safe_subpath(root: Path, candidate: Path) -> bool:
 
 
 def atomic_write(target_path: Path, content: str | bytes, encoding: str = "utf-8") -> None:
-    """Write `content` atomically to `target_path` via a sibling temporary file and `os.replace`.
-
-    Safely breaks OS hardlinks before replacement so immutable snapshots in `Draft-*` remain intact.
-    """
+    """Write `content` atomically to `target_path` via a sibling temporary file and `os.replace`."""
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    mode = "wb" if isinstance(content, bytes) else "w"
     fd, tmp_name = tempfile.mkstemp(
         prefix=f".{target_path.name}.",
         suffix=".tmp",
@@ -97,12 +91,12 @@ def atomic_write(target_path: Path, content: str | bytes, encoding: str = "utf-8
     tmp_path = Path(tmp_name)
     try:
         if isinstance(content, bytes):
-            with os.fdopen(fd, mode) as handle:
+            with os.fdopen(fd, "wb") as handle:
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
         else:
-            with os.fdopen(fd, mode, encoding=encoding, newline="\n") as handle:
+            with os.fdopen(fd, "w", encoding=encoding, newline="\n") as handle:
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
@@ -113,9 +107,7 @@ def atomic_write(target_path: Path, content: str | bytes, encoding: str = "utf-8
 
 
 def parse_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
-    """Zero-dependency YAML frontmatter parser with support for multiline block scalars (`|` and `>`),
-    nested dictionaries, inline lists, and typed scalars.
-    """
+    """Zero-dependency YAML frontmatter parser with support for multiline block scalars (`|` and `>`)."""
     match = _FRONTMATTER_BOUNDARY_RE.match(markdown_text)
     if not match:
         return {}, markdown_text
@@ -131,11 +123,7 @@ def parse_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
     while idx < total:
         line = lines[idx]
         stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            idx += 1
-            continue
-
-        if ":" not in line:
+        if not stripped or stripped.startswith("#") or ":" not in line:
             idx += 1
             continue
 
@@ -143,11 +131,9 @@ def parse_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
         key = key_part.strip()
         val_str = val_part.strip()
 
-        # Remove trailing comments outside quotes
-        if val_str and not val_str.startswith(('"', "'")):
+        if val_str and not (val_str.startswith('"') or val_str.startswith("'")):
             val_str = re.sub(r"\s+#.*$", "", val_str).strip()
 
-        # Case 1: Multiline block scalar (`|` literal or `>` folded)
         if val_str in ("|", ">", "|-", ">-"):
             fold = val_str.startswith(">")
             strip_trailing = val_str.endswith("-")
@@ -169,13 +155,12 @@ def parse_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
                     break
                 block_lines.append(next_line[base_indent:])
                 idx += 1
-            joined = " ".join(line.strip() for line in block_lines).strip() if fold else "\n".join(block_lines)
+            joined = " ".join(ln.strip() for ln in block_lines).strip() if fold else "\n".join(block_lines)
             if strip_trailing:
                 joined = joined.rstrip("\n")
             result[key] = joined
             continue
 
-        # Case 2: Indented list or nested mapping on following lines
         if val_str == "":
             idx += 1
             nested_list: list[Any] = []
@@ -287,9 +272,7 @@ class VaultDocumentNode:
 
 
 def compute_prose_metrics(body: str) -> tuple[ProseMetrics, dict[str, str], tuple[WikilinkRef, ...]]:
-    """Compute word counts, multi-paragraph-aware dialogue ratios, wikilinks (excluding code blocks),
-    and SHA-256 paragraph hashes for fast $O(1)$ hierarchical diffing.
-    """
+    """Compute word counts, multi-paragraph dialogue ratios, wikilinks, and SHA-256 paragraph hashes."""
     directives: dict[str, str] = {
         match.group(0).split(":", 1)[0].strip().lstrip("@"): match.group(1).strip()
         for match in _NOVELWRITER_DIRECTIVE_RE.finditer(body)
@@ -383,9 +366,11 @@ class VaultIndex:
             return
 
         for dirpath, dirnames, filenames in os.walk(start):
-            dirnames[:] = sorted(d for d in dirnames if d not in self.excluded_dirs and not d.startswith("."))
+            dirnames[:] = sorted(
+                d for d in dirnames if d not in self.excluded_dirs and not d.startswith(".")
+            )
             for filename in sorted(filenames):
-                if filename.endswith(".md") and not filename.startswith("."):
+                if filename.endswith(".md") and not filename.startswith(".") and filename != "_Arcanum_Diagnostics.md":
                     candidate = Path(dirpath) / filename
                     if is_safe_subpath(self.vault_root, candidate):
                         yield candidate
@@ -440,13 +425,10 @@ class VaultIndex:
         """Two-level hierarchical paragraph hash comparison avoiding quadratic `SequenceMatcher` runs."""
         old_set = set(old_doc.metrics.paragraph_hashes)
         new_set = set(new_doc.metrics.paragraph_hashes)
-        unchanged = len(old_set & new_set)
-        added = len(new_set - old_set)
-        removed = len(old_set - new_set)
         return {
-            "unchanged_paragraphs": unchanged,
-            "added_paragraphs": added,
-            "removed_paragraphs": removed,
+            "unchanged_paragraphs": len(old_set & new_set),
+            "added_paragraphs": len(new_set - old_set),
+            "removed_paragraphs": len(old_set - new_set),
             "net_word_delta": new_doc.metrics.total_words - old_doc.metrics.total_words,
         }
 
@@ -507,3 +489,33 @@ class VaultIndex:
                 )
         except Exception as exc:
             logger.warning("Ignoring corrupt or outdated cache %s: %s", self.cache_file, exc)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum vault-index`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum vault-index",
+        description="Scan and cache a Sovereign Vault using the unified mtime-keyed VaultIndex DAL.",
+    )
+    parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Path to vault or manuscript root")
+    args = parser.parse_args(argv)
+
+    index = VaultIndex(args.vault)
+    nodes = index.scan_vault()
+    total_words = sum(n.metrics.total_words for n in nodes)
+    dialogue_words = sum(n.metrics.dialogue_words for n in nodes)
+    summary = {
+        "vault_root": str(index.vault_root),
+        "documents_indexed": len(nodes),
+        "total_words": total_words,
+        "dialogue_words": dialogue_words,
+        "dialogue_ratio": round(dialogue_words / total_words, 4) if total_words else 0.0,
+        "total_wikilinks": sum(len(n.wikilinks) for n in nodes),
+        "cache_file": str(index.cache_file),
+    }
+    sys.stdout.write(json.dumps(summary, indent=2) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,31 +1,29 @@
-"""Custom Non-Gregorian Calendar & Biome/Relativistic Timeline Solver (`arcanum timeline audit`).
+"""Custom Non-Gregorian Calendar & Biome/Relativistic Timeline Solver (`arcanum timeline-audit`).
 
 Validates chronological consistency across `world.yaml`, `Locations/`, `History/`, and manuscript
 chapters:
-1. Custom Planetary Calendars:
-   - Converts custom `[year, month_index, day]` dates into absolute planetary days using arbitrary
-     month lengths defined in `world.yaml` (e.g., 10 months of 36 days in the Reliquary Universe).
-2. Travel Physics & Biome Route Auditing (`TIME-301` & `TIME-302`):
-   - Computes minimum travel days between consecutive scenes for the same character based on
-     distance (`km`) and transport mode (`foot`, `camel_caravan`, `sailing_ship`, `airship`,
-     `relativistic_torchship`) modified by terrain friction (`sand_sea`, `mountain_pass`, `paved_road`).
-   - Flags `TIME-301` (Impossible Travel Velocity) when elapsed calendar days between chapters are
-     shorter than physical travel time.
-   - Flags `TIME-302` (Temporal Regression / Simultaneity Paradox) when a character appears in a later
-     chapter at an earlier timestamp than their previous scene.
+1. Custom Planetary Calendars (`CustomCalendarSpec`).
+2. Travel Physics & Biome Route Auditing (`TIME-301` & `TIME-302`).
+3. Lorentz Relativistic Proper-Time Dilation (`compute_relativistic_proper_days`).
 
 Repository Target: `scripts/lib/timeline_solver.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
-import itertools
-import math
+import argparse
 from dataclasses import asdict, dataclass
+import json
+import math
+from pathlib import Path
+import sys
 from typing import Any
 
-# Default daily travel speeds in km/day before terrain modifiers
+try:
+    from lib.vault_index import VaultIndex, parse_frontmatter
+except ImportError:
+    from vault_index import VaultIndex, parse_frontmatter
+
 DEFAULT_MODE_SPEED_KMPD: dict[str, float] = {
     "foot": 30.0,
     "camel_caravan": 40.0,
@@ -34,7 +32,6 @@ DEFAULT_MODE_SPEED_KMPD: dict[str, float] = {
     "airship": 450.0,
 }
 
-# Terrain multipliers (e.g., Sand Sea dunes reduce overland speed to 60%)
 DEFAULT_TERRAIN_MULTIPLIER: dict[str, float] = {
     "paved_road": 1.00,
     "open_plains": 0.85,
@@ -64,7 +61,9 @@ class CustomCalendarSpec:
             raise ValueError(f"Month {month} out of range (1..{len(self.month_lengths)})")
         max_day = self.month_lengths[month - 1]
         if not (1 <= day <= max_day):
-            raise ValueError(f"Day {day} out of range (1..{max_day}) for month {self.month_names[month - 1]}")
+            raise ValueError(
+                f"Day {day} out of range (1..{max_day}) for month {self.month_names[month - 1]}"
+            )
         prior_years_days = (year - 1) * self.days_per_year
         prior_months_days = sum(self.month_lengths[: month - 1])
         return prior_years_days + prior_months_days + (day - 1)
@@ -97,7 +96,7 @@ class CharacterTimelineEvent:
 class TimelineAnomaly:
     """Detected chronological or travel-speed paradox."""
 
-    rule_id: str  # "TIME-301" | "TIME-302"
+    rule_id: str
     character_name: str
     from_chapter: int
     to_chapter: int
@@ -109,9 +108,7 @@ class TimelineAnomaly:
 
 
 def compute_relativistic_proper_days(coordinate_days: float, velocity_fraction_c: float) -> float:
-    r"""For hard Sci-Fi voyages (`ASTROPHYSICS.md`), compute shipboard proper time $\Delta \tau$
-    from coordinate time $\Delta t$ using Lorentz time dilation $\Delta \tau = \Delta t \sqrt{1 - (v/c)^2}$.
-    """
+    """Compute shipboard proper time $\\Delta \\tau = \\Delta t \\sqrt{1 - (v/c)^2}$."""
     if not (0.0 <= velocity_fraction_c < 1.0):
         raise ValueError("velocity_fraction_c must be in [0.0, 1.0)")
     return round(coordinate_days * math.sqrt(1.0 - (velocity_fraction_c**2)), 4)
@@ -140,7 +137,7 @@ def audit_timeline_and_routes(
 
     anomalies: list[TimelineAnomaly] = []
     for char_name, char_events in by_character.items():
-        for prev_ev, curr_ev in itertools.pairwise(char_events):
+        for prev_ev, curr_ev in zip(char_events, char_events[1:]):
             prev_abs = calendar.to_absolute_day(prev_ev.year, prev_ev.month, prev_ev.day)
             curr_abs = calendar.to_absolute_day(curr_ev.year, curr_ev.month, curr_ev.day)
             elapsed = curr_abs - prev_abs
@@ -197,47 +194,82 @@ def audit_timeline_and_routes(
         "passed": len(anomalies) == 0,
         "calendar_name": calendar.calendar_name,
         "days_per_year": calendar.days_per_year,
+        "events_audited": len(events),
+        "routes_loaded": len(routes),
         "anomalies": [asdict(a) for a in anomalies],
     }
 
 
-def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum timeline-audit`."""
-    import argparse
-    import json
-    import sys
+def audit_vault_timeline(vault_root: Path) -> dict[str, Any]:
+    """Automatically scan `world.yaml`, `Locations/*.md`, and chapter frontmatter via `VaultIndex`."""
+    root = vault_root.resolve()
+    cal_name = "Standard Solar Reckoning"
+    month_lengths: tuple[int, ...] = (30,) * 12
 
+    world_yaml = root / "world.yaml"
+    if world_yaml.exists():
+        raw = world_yaml.read_text(encoding="utf-8")
+        wrapped = raw if raw.lstrip().startswith("---") else f"---\n{raw}\n---\n"
+        w_meta, _ = parse_frontmatter(wrapped)
+        if "calendar_name" in w_meta:
+            cal_name = str(w_meta["calendar_name"])
+        if isinstance(w_meta.get("month_lengths"), list) and w_meta["month_lengths"]:
+            month_lengths = tuple(int(x) for x in w_meta["month_lengths"])
+
+    calendar = CustomCalendarSpec(
+        calendar_name=cal_name,
+        month_names=tuple(f"Month-{i}" for i in range(1, len(month_lengths) + 1)),
+        month_lengths=month_lengths,
+    )
+
+    index = VaultIndex(root)
+    nodes = index.scan_vault()
+    routes: list[RouteEdge] = []
+    events: list[CharacterTimelineEvent] = []
+
+    for idx_num, node in enumerate(nodes, start=1):
+        fm = node.frontmatter
+        rel = node.relative_path
+        if "Locations/" in rel or fm.get("type") == "route":
+            if "origin" in fm and "destination" in fm and "distance_km" in fm:
+                routes.append(
+                    RouteEdge(
+                        origin=str(fm["origin"]),
+                        destination=str(fm["destination"]),
+                        distance_km=float(fm["distance_km"]),
+                        terrain=str(fm.get("terrain", "sand_sea")),
+                    )
+                )
+        elif "year" in fm and "month" in fm and "day" in fm:
+            char_name = str(fm.get("pov") or node.directives.get("pov") or "Protagonist")
+            loc = str(fm.get("location") or node.directives.get("location") or "Unknown")
+            events.append(
+                CharacterTimelineEvent(
+                    chapter_index=int(fm.get("chapter", idx_num)),
+                    character_name=char_name,
+                    location=loc,
+                    year=int(fm["year"]),
+                    month=int(fm["month"]),
+                    day=int(fm["day"]),
+                    travel_mode=str(fm.get("travel_mode", "camel_caravan")),
+                )
+            )
+
+    return audit_timeline_and_routes(calendar=calendar, routes=routes, events=events)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum timeline-audit` / `arcanum timeline-solver`."""
     parser = argparse.ArgumentParser(
         prog="arcanum timeline-audit",
-        description="Audit character movements and non-Gregorian timelines for travel paradoxes.",
+        description="Audit custom planetary calendar dates and overland/relativistic travel routes.",
     )
-    parser.add_argument("--calendar", default="Solar Standard", help="Calendar name")
-    parser.add_argument("--days-per-month", type=int, default=30, help="Days per month (default: 30)")
-    parser.add_argument("--months", type=int, default=12, help="Months per year (default: 12)")
-    parser.add_argument("--json", action="store_true", help="Output JSON results")
+    parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault or manuscript directory")
     args = parser.parse_args(argv)
 
-    cal = CustomCalendarSpec(
-        calendar_name=args.calendar,
-        month_names=tuple(f"Month-{i+1}" for i in range(args.months)),
-        month_lengths=(args.days_per_month,) * args.months,
-    )
-    events = [
-        CharacterTimelineEvent(1, "Kael", "Capital", 1000, 1, 1, "foot"),
-        CharacterTimelineEvent(2, "Kael", "Border Fort", 1000, 1, 5, "foot"),
-    ]
-    routes = [RouteEdge("Capital", "Border Fort", 100.0, "road")]
-    res = audit_timeline_and_routes(calendar=cal, routes=routes, events=events)
-    if args.json:
-        sys.stdout.write(json.dumps(res, indent=2) + "\n")
-    else:
-        sys.stdout.write(f"Ars Arcanum Timeline Solver — {cal.calendar_name} ({cal.days_per_year} days/year)\n")
-        sys.stdout.write("-" * 65 + "\n")
-        status = "PASSED" if res["passed"] else "ANOMALIES DETECTED"
-        sys.stdout.write(f"Status: {status}\n")
-        for a in res["anomalies"]:
-            sys.stdout.write(f"  [{a['rule_id']}] {a['message']}\n")
-    return 0 if res["passed"] else 1
+    result = audit_vault_timeline(args.vault)
+    sys.stdout.write(json.dumps(result, indent=2) + "\n")
+    return 0 if result["passed"] else 1
 
 
 if __name__ == "__main__":

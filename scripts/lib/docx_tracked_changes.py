@@ -1,32 +1,27 @@
 """Bidirectional CriticMarkup <-> OpenXML Word Tracked Changes Bridge (Phase 3A Refactor).
 
 Upgrades `scripts/lib/docx_builder.py` and `scripts/lib/docx_sync.py` with:
-1. Pure `xml.etree.ElementTree` DOM construction for `word/document.xml` (eliminating raw
-   XML string interpolation vulnerabilities when prose contains control characters or symbols).
+1. Pure `xml.etree.ElementTree` DOM construction for `word/document.xml`.
 2. Full preservation of Microsoft Word Tracked Changes (`<w:ins>`, `<w:del>` / `<w:delText>`)
-   and Editor Comments (`word/comments.xml` + `<w:commentReference>`):
-   - `export_markdown_to_docx()`: Converts Markdown + CriticMarkup (`{++insert++}`, `{--delete--}`,
-     `{~~old~>new~~}`, `{>>Author: comment<<}`) into native OpenXML Tracked Changes so editors
-     opening the `.docx` in Word or LibreOffice see real revision markup.
-   - `pull_docx_to_markdown()`: Extracts paragraphs, `<w:ins>`, `<w:del>`, and comments from
-     an edited `.docx` archive and converts them cleanly back into Markdown with CriticMarkup.
+   and Editor Comments (`word/comments.xml` + `<w:commentReference>`).
 
 Repository Target: `scripts/lib/docx_tracked_changes.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
-import re
-import xml.etree.ElementTree as ET
-import zipfile
+import argparse
 from datetime import datetime, timezone
 from pathlib import Path
+import re
+import sys
+import xml.etree.ElementTree as ET  # nosec B405
+import zipfile
 
 try:
-    from scripts.lib.vault_index import PathSecurityError, is_safe_subpath
+    from lib.vault_index import PathSecurityError, atomic_write, is_safe_subpath
 except ImportError:
-    from vault_index import PathSecurityError, is_safe_subpath
+    from vault_index import PathSecurityError, atomic_write, is_safe_subpath
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 ET.register_namespace("w", W_NS)
@@ -50,9 +45,7 @@ def build_tracked_document_xml(
     author: str = "Ars Arcanum Author",
     timestamp: str | None = None,
 ) -> tuple[bytes, bytes]:
-    """Construct `word/document.xml` and `word/comments.xml` via `xml.etree.ElementTree` DOM nodes,
-    converting CriticMarkup spans into native OpenXML `<w:ins>`, `<w:del>`, and `<w:comment>` elements.
-    """
+    """Construct `word/document.xml` and `word/comments.xml` via `xml.etree.ElementTree` DOM nodes."""
     iso_ts = timestamp or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     doc_root = ET.Element(_w("document"))
     body_el = ET.SubElement(doc_root, _w("body"))
@@ -65,7 +58,6 @@ def build_tracked_document_xml(
     for para_text in paragraphs:
         p_el = ET.SubElement(body_el, _w("p"))
 
-        # Check for Markdown heading prefix
         if para_text.startswith("#"):
             level = len(para_text) - len(para_text.lstrip("#"))
             clean_heading = para_text.lstrip("#").strip()
@@ -81,8 +73,7 @@ def build_tracked_document_xml(
         for match in _CRITIC_TOKEN_RE.finditer(para_text):
             start, end = match.span()
             if start > cursor:
-                plain_segment = para_text[cursor:start]
-                _append_text_run(p_el, plain_segment)
+                _append_text_run(p_el, para_text[cursor:start])
 
             if match.group("ins") is not None:
                 ins_el = ET.SubElement(
@@ -188,25 +179,25 @@ def export_markdown_to_docx(
     doc_xml, comments_xml = build_tracked_document_xml(markdown_body, author=author)
 
     content_types_xml = (
-        b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        b'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-        b'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-        b'<Default Extension="xml" ContentType="application/xml"/>'
-        b'<Override PartName="/word/document.xml" '
-        b'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
-        b'<Override PartName="/word/comments.xml" '
-        b'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>'
-        b"</Types>"
-    )
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+        '<Default Extension="xml" ContentType="application/xml"/>'
+        '<Override PartName="/word/document.xml" '
+        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
+        '<Override PartName="/word/comments.xml" '
+        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>'
+        "</Types>"
+    ).encode("utf-8")
 
     rels_xml = (
-        b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-        b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        b'<Relationship Id="rId1" '
-        b'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" '
-        b'Target="word/document.xml"/>'
-        b"</Relationships>"
-    )
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+        '<Relationship Id="rId1" '
+        'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" '
+        'Target="word/document.xml"/>'
+        "</Relationships>"
+    ).encode("utf-8")
 
     with zipfile.ZipFile(resolved_out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("[Content_Types].xml", content_types_xml)
@@ -218,10 +209,7 @@ def export_markdown_to_docx(
 
 
 def pull_docx_to_markdown(docx_path: Path, *, vault_root: Path | None = None) -> str:
-    """Read an edited `.docx` archive and reconstruct Markdown with inline CriticMarkup for
-    Word Tracked Changes (`<w:ins>` -> `{++...++}`, `<w:del>` -> `{--...--}`) and comments
-    (`<w:commentReference>` -> `{>>Author: comment<<}`).
-    """
+    """Read an edited `.docx` archive and reconstruct Markdown with inline CriticMarkup."""
     resolved_in = docx_path.resolve()
     if vault_root is not None and not is_safe_subpath(vault_root, resolved_in):
         raise PathSecurityError(f"Input DOCX path escapes vault root: {resolved_in}")
@@ -229,14 +217,14 @@ def pull_docx_to_markdown(docx_path: Path, *, vault_root: Path | None = None) ->
     comments_map: dict[str, str] = {}
     with zipfile.ZipFile(resolved_in, "r") as zf:
         if "word/comments.xml" in zf.namelist():
-            c_root = ET.fromstring(zf.read("word/comments.xml"))  # noqa: S314
+            c_root = ET.fromstring(zf.read("word/comments.xml"))  # noqa: S314  # nosec B314
             for c_el in c_root.findall(_w("comment")):
                 cid = c_el.get(_w("id"), "")
                 c_author = c_el.get(_w("author"), "Editor")
                 c_texts = [t.text or "" for t in c_el.iter(_w("t"))]
                 comments_map[cid] = f"{c_author}: {''.join(c_texts).strip()}"
 
-        doc_root = ET.fromstring(zf.read("word/document.xml"))  # noqa: S314
+        doc_root = ET.fromstring(zf.read("word/document.xml"))  # noqa: S314  # nosec B314
 
     body_el = doc_root.find(_w("body"))
     if body_el is None:
@@ -277,3 +265,40 @@ def pull_docx_to_markdown(docx_path: Path, *, vault_root: Path | None = None) ->
             out_paragraphs.append(f"{heading_prefix}{para_str}")
 
     return "\n\n".join(out_paragraphs) + ("\n" if out_paragraphs else "")
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum docx-tracked`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum docx-tracked",
+        description="Bidirectional Markdown CriticMarkup <-> Word Tracked Changes (.docx) converter.",
+    )
+    sub = parser.add_subparsers(dest="action", required=True)
+
+    exp_p = sub.add_parser("export", help="Export Markdown with CriticMarkup to .docx with Tracked Changes")
+    exp_p.add_argument("input_md", type=Path, help="Source Markdown file")
+    exp_p.add_argument("output_docx", type=Path, help="Destination .docx file")
+    exp_p.add_argument("--author", default="Ars Arcanum Author", help="Author name for tracked revisions")
+
+    pull_p = sub.add_parser("pull", help="Pull .docx with Tracked Changes into Markdown with CriticMarkup")
+    pull_p.add_argument("input_docx", type=Path, help="Source .docx file")
+    pull_p.add_argument("output_md", nargs="?", type=Path, default=None, help="Optional destination Markdown file")
+
+    args = parser.parse_args(argv)
+    if args.action == "export":
+        body = args.input_md.read_text(encoding="utf-8")
+        out_path = export_markdown_to_docx(body, args.output_docx, author=args.author)
+        sys.stdout.write(f"Exported Tracked Changes DOCX to {out_path}\n")
+        return 0
+
+    md_out = pull_docx_to_markdown(args.input_docx)
+    if args.output_md is not None:
+        atomic_write(args.output_md, md_out)
+        sys.stdout.write(f"Pulled Tracked Changes Markdown to {args.output_md}\n")
+    else:
+        sys.stdout.write(md_out)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

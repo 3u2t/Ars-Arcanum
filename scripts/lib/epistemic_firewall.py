@@ -1,25 +1,27 @@
-"""Epistemic POV & Spoiler Firewall Engine for Ars Arcanum (`arcanum validate --epistemic`).
+"""Epistemic POV & Spoiler Firewall Engine for Ars Arcanum (`arcanum validate-epistemic`).
 
 Models Epistemic Asymmetry across a multi-POV manuscript and its linked World Bible:
 - Tracks what each character knows at baseline (`Characters/<Name>.md` frontmatter `knows: [...]`).
 - Tracks chapter-ordered scene transitions (`chapter`, `pov`, `learns: [...]`, `references: [...]`,
   and wikilinks `[[Entity]]` mapped to secret lore IDs).
-- Flags deterministic epistemic violations (`EPI-201` through `EPI-203`):
-  * `EPI-201`: POV character references or acts on a secret `fact_id` in Chapter $N$ before learning
-    it in Chapter $M$ ($N < M$) or never learning it at all.
-  * `EPI-202`: Unreliable/Mythic lore (`myth: true` in World Bible frontmatter) is cited as objective
-    narrator truth without an in-world epistemic framing tag.
-  * `EPI-203`: Orphan reveal (`learns: [fact_id]` is declared in a chapter, but `fact_id` is never
-    defined or referenced anywhere else in the vault).
+- Flags deterministic epistemic violations (`EPI-201` through `EPI-203`).
 
 Repository Target: `scripts/lib/epistemic_firewall.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import asdict, dataclass
+import json
+from pathlib import Path
+import sys
 from typing import Any
+
+try:
+    from lib.vault_index import VaultIndex
+except ImportError:
+    from vault_index import VaultIndex
 
 
 @dataclass(frozen=True)
@@ -46,8 +48,8 @@ class ChapterEpistemicEvent:
 class EpistemicViolation:
     """Single deterministic epistemic or spoiler violation."""
 
-    rule_id: str  # "EPI-201" | "EPI-202" | "EPI-203"
-    severity: str  # "ERROR" | "WARNING"
+    rule_id: str
+    severity: str
     chapter_index: int
     chapter_title: str
     pov_character: str
@@ -82,7 +84,6 @@ def audit_epistemic_continuity(
     }
     ordered_chapters = sorted(chapters, key=lambda ch: ch.chapter_index)
 
-    # First pass: index when each character learns each fact (for helpful error messages)
     first_learned_at: dict[tuple[str, str], int] = {}
     all_referenced_facts: set[str] = set()
     all_learned_facts: list[tuple[int, str, str, str]] = []
@@ -97,12 +98,10 @@ def audit_epistemic_continuity(
 
     violations: list[EpistemicViolation] = []
 
-    # Second pass: simulate chronological knowledge acquisition chapter by chapter
     for ch in ordered_chapters:
         pov = ch.pov_character
         known_now = knowledge_state.setdefault(pov, set())
 
-        # If a fact is learned inside the same chapter, allow references within that chapter
         for f_id in ch.learned_facts:
             known_now.add(f_id)
 
@@ -149,7 +148,6 @@ def audit_epistemic_continuity(
                     )
                 )
 
-    # Third pass: check for orphan reveals (learned facts never referenced anywhere)
     for chap_idx, chap_title, pov, f_id in all_learned_facts:
         if f_id not in all_referenced_facts:
             violations.append(
@@ -176,43 +174,71 @@ def audit_epistemic_continuity(
     )
 
 
-def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum validate-epistemic`."""
-    import argparse
-    import json
-    import sys
+def _as_str_tuple(raw: Any) -> tuple[str, ...]:
+    if isinstance(raw, (list, tuple)):
+        return tuple(str(x).strip() for x in raw if str(x).strip())
+    if isinstance(raw, str) and raw.strip():
+        return tuple(s.strip() for s in raw.split(",") if s.strip())
+    return ()
 
+
+def audit_vault_epistemic(vault_root: Path) -> EpistemicAuditReport:
+    """Automatically scan a Sovereign Vault via `VaultIndex` and run the Epistemic POV Firewall."""
+    index = VaultIndex(vault_root)
+    nodes = index.scan_vault()
+
+    characters: list[CharacterKnowledgeBaseline] = []
+    chapters: list[ChapterEpistemicEvent] = []
+    myths: set[str] = set()
+
+    for idx_num, node in enumerate(nodes, start=1):
+        fm = node.frontmatter
+        rel = node.relative_path
+
+        if fm.get("myth") is True or fm.get("unreliable") is True:
+            fact_id = str(fm.get("fact_id") or Path(rel).stem)
+            myths.add(fact_id)
+
+        if "Characters/" in rel or fm.get("type") == "character":
+            char_name = str(fm.get("name") or fm.get("title") or Path(rel).stem)
+            knows = frozenset(_as_str_tuple(fm.get("knows", [])))
+            characters.append(CharacterKnowledgeBaseline(character_name=char_name, initial_known_facts=knows))
+        elif "chapter" in fm or "pov" in fm or "pov" in node.directives:
+            chap_idx = int(fm.get("chapter", idx_num))
+            chap_title = str(fm.get("title") or Path(rel).stem)
+            pov = str(fm.get("pov") or node.directives.get("pov") or "Omniscient")
+            refs = _as_str_tuple(fm.get("references", []))
+            learned = _as_str_tuple(fm.get("learns") or fm.get("reveals") or [])
+            asserted = _as_str_tuple(fm.get("asserts", []))
+            chapters.append(
+                ChapterEpistemicEvent(
+                    chapter_index=chap_idx,
+                    chapter_title=chap_title,
+                    pov_character=pov,
+                    referenced_facts=refs,
+                    learned_facts=learned,
+                    asserted_objective_facts=asserted,
+                )
+            )
+
+    return audit_epistemic_continuity(
+        characters=characters,
+        chapters=chapters,
+        mythic_unreliable_facts=frozenset(myths),
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum validate-epistemic` / `arcanum epistemic`."""
     parser = argparse.ArgumentParser(
         prog="arcanum validate-epistemic",
-        description="Audit multi-POV manuscripts for chronological spoiler leaks and epistemic breaches.",
+        description="Audit a Sovereign Vault or Manuscript for POV spoiler leaks and epistemic breaches.",
     )
-    parser.add_argument("target", nargs="?", default=".", help="Target manuscript or chapter directory")
-    parser.add_argument("--json", action="store_true", help="Output JSON audit report")
+    parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault or manuscript directory")
     args = parser.parse_args(argv)
 
-    characters = [
-        CharacterKnowledgeBaseline("Kael", frozenset({"desert_routes"})),
-    ]
-    chapters = [
-        ChapterEpistemicEvent(
-            chapter_index=1,
-            chapter_title="Chapter 1",
-            pov_character="Kael",
-            referenced_facts=("desert_routes",),
-            learned_facts=(),
-            asserted_objective_facts=(),
-        ),
-    ]
-    report = audit_epistemic_continuity(characters=characters, chapters=chapters)
-    if args.json:
-        sys.stdout.write(json.dumps(report.to_dict(), indent=2) + "\n")
-    else:
-        sys.stdout.write(f"Ars Arcanum Epistemic POV Firewall — {report.chapters_audited} Chapter(s)\n")
-        sys.stdout.write("-" * 65 + "\n")
-        status = "PASSED (No Breaches)" if report.passed else "BREACHES DETECTED"
-        sys.stdout.write(f"Status: {status} ({len(report.violations)} violation(s))\n")
-        for v in report.violations:
-            sys.stdout.write(f"  [{v.rule_id} {v.severity}] {v.message}\n")
+    report = audit_vault_epistemic(args.vault)
+    sys.stdout.write(json.dumps(report.to_dict(), indent=2) + "\n")
     return 0 if report.passed else 1
 
 

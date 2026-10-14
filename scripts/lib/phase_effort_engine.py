@@ -1,49 +1,38 @@
 """Phase-Aware Effort & Career Velocity Engine for Ars Arcanum (`writing_sprint.py` & `portfolio.py`).
 
-Natively unifies the authorial career pipeline and phase-weighted productivity rules from the
-Master Writing Ecosystem spreadsheet into Ars Arcanum's local-first CLI & JSONL telemetry:
+Natively unifies the authorial career pipeline and phase-weighted productivity rules into
+Ars Arcanum's local-first CLI & JSONL telemetry:
 - 9 Canonical Project Stages: `Concept`, `Pre-Draft Outline`, `Drafting`, `Pre-Revision Outline`,
   `Revision`, `Beta Review`, `Proofing`, `Querying`, `Publishing`.
 - Deterministic Phase-Aware Effort Multipliers:
-  * First Draft Prose (`drafting_words`): `1.00x` across all stages.
-  * Outlining (`outlining_words`): `1.00x` during designated Outline stages (`Pre-Draft Outline`,
-    `Pre-Revision Outline`, `Concept`), `0.50x` off-phase.
+  * First Draft Prose (`first_draft_words`): `1.00x` across all stages.
+  * Outlining (`outlining_words`): `1.00x` during designated Outline stages, `0.50x` off-phase.
   * Worldbuilding / Lore (`worldbuilding_words`): `0.50x` (2 lore words = 1 effort point).
-  * Revisions (`revision_words`): `0.20x` during `Revision` / `Beta Review` / `Proofing` stages
-    (5 revised words = 1 effort point), and `0.00x` outside Revision stages to prevent premature
-    editing during First Draft sprints.
-- Career & Portfolio Telemetry:
-  * Daily Effort Target (default: `2,000` effort points/day)
-  * Annual Production Target (default: `730,000` words/year)
-  * Lifetime Career Milestone (default: `15,000,000` words)
-  * Trailing 30-day velocity, active streak calculation, required daily pace, and forecasted finish date.
+  * Revisions (`revision_words`): `0.20x` during Revision/Beta/Proofing stages, and `0.00x`
+    outside Revision stages to prevent premature editing during First Draft sprints.
 
-Repository Target: `scripts/lib/phase_effort_engine.py` (integrates with `writing_sprint.py` & `portfolio.py`)
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
+Repository Target: `scripts/lib/phase_effort_engine.py`
 """
 
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from enum import Enum
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
-    from scripts.lib.vault_index import atomic_write, is_safe_subpath
+    from lib.vault_index import atomic_write, is_safe_subpath
 except ImportError:
-    try:
-        from lib.vault_index import atomic_write, is_safe_subpath
-    except ImportError:
-        from vault_index import atomic_write, is_safe_subpath
+    from vault_index import atomic_write, is_safe_subpath
 
 
 class ProjectStage(str, Enum):
-    """Canonical book lifecycle stages aligned with the Master Writing Ecosystem."""
+    """Canonical book lifecycle stages."""
 
     CONCEPT = "Concept"
     PRE_DRAFT_OUTLINE = "Pre-Draft Outline"
@@ -75,7 +64,7 @@ DESIGNATED_REVISION_STAGES: frozenset[ProjectStage] = frozenset(
 
 @dataclass(frozen=True)
 class EffortMultiplierConfig:
-    """Configurable phase-aware effort weights and career targets (`constitution.yaml` / `config.py`)."""
+    """Configurable phase-aware effort weights and career targets."""
 
     daily_effort_goal: float = 2_000.0
     annual_word_target: int = 730_000
@@ -88,12 +77,9 @@ class EffortMultiplierConfig:
     off_phase_revision_weight: float = 0.00
 
 
-DEFAULT_EFFORT_CONFIG = EffortMultiplierConfig()
-
-
 @dataclass(frozen=True)
 class SessionEffortBreakdown:
-    """Calculated word and effort point breakdown for a single logged writing session."""
+    """Factory-only schema stub retained for backwards compatibility."""
 
     session_date: str
     book_title: str
@@ -113,7 +99,7 @@ class SessionEffortBreakdown:
     words_per_hour: float = field(init=False)
 
     def __post_init__(self) -> None:
-        raise NotImplementedError("Use `evaluate_session_effort()` factory to construct SessionEffortBreakdown.")
+        raise NotImplementedError("Use `evaluate_session_effort()` factory to construct sessions.")
 
 
 @dataclass(frozen=True)
@@ -204,7 +190,7 @@ def evaluate_session_effort(
     revision_words: int = 0,
     minutes_spent: float = 0.0,
     notes: str = "",
-    config: EffortMultiplierConfig = DEFAULT_EFFORT_CONFIG,
+    config: EffortMultiplierConfig = EffortMultiplierConfig(),
 ) -> EvaluatedSession:
     """Deterministically compute effort points and manuscript progress for a writing session."""
     resolved_stage = ProjectStage(stage) if not isinstance(stage, ProjectStage) else stage
@@ -234,8 +220,6 @@ def evaluate_session_effort(
         2,
     )
 
-    # First draft prose counts toward actual manuscript word count; worldbuilding/outlining/revision
-    # contribute to daily Effort Points without artificially inflating manuscript draft length.
     manuscript_words_added = first_draft_words
     raw_words_logged = worldbuilding_words + outlining_words + first_draft_words + revision_words
     premature_revision_blocked = (revision_words > 0) and (not in_revision_stage)
@@ -269,7 +253,7 @@ class PhaseEffortLedger:
     def __init__(
         self,
         workspace_root: Path,
-        config: EffortMultiplierConfig = DEFAULT_EFFORT_CONFIG,
+        config: EffortMultiplierConfig = EffortMultiplierConfig(),
     ) -> None:
         self.workspace_root = workspace_root.resolve()
         self.config = config
@@ -336,7 +320,6 @@ class PhaseEffortLedger:
         lifetime_pct = round((lifetime_words / self.config.lifetime_word_milestone) * 100.0, 4)
         trailing_velocity = round(trailing_30d_total_words / 30.0, 1)
 
-        # Calculate consecutive daily streak where daily effort goal was met
         streak = 0
         cursor = ref_date
         while daily_effort_by_date.get(cursor, 0.0) >= self.config.daily_effort_goal:
@@ -404,9 +387,9 @@ class PhaseEffortLedger:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum sprint effort`."""
+    """CLI entrypoint for `arcanum sprint-effort` / `arcanum effort`."""
     parser = argparse.ArgumentParser(
-        prog="arcanum sprint effort",
+        prog="arcanum sprint-effort",
         description="Log a phase-weighted writing session and evaluate daily effort points.",
     )
     parser.add_argument("--workspace", type=Path, default=Path.cwd(), help="Path to sovereign workspace root")

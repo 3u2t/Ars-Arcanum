@@ -1,24 +1,27 @@
-"""Hard Magic & Sci-Fi Resource Conservation Ledger (`arcanum ledger audit`).
+"""Hard Magic & Sci-Fi Resource Conservation Ledger (`arcanum ledger-audit`).
 
 Audits state transitions across manuscript chapters against rules defined in
 `Magic-Technology/` and `Artifacts/`:
 - Tracks finite character/ship pools (e.g., `ether_vials`, `mana`, `ammunition`, `water_liters`,
   `delta_v_mps`, `corruption_index`) across chronological chapter `state_delta` blocks.
-- Flags deterministic continuity errors (`LED-501` & `LED-502`):
-  * `LED-501` (Resource Depletion Deficit): A character or vessel expends more of a finite resource
-    than remains in their inventory/pool (balance drops below `min_bound`, default `0.0`).
-  * `LED-502` (Capacity / Corruption Cap Breach): A resource or corruption meter exceeds its
-    maximum physiological or structural cap (`max_bound`) without triggering the declared
-    consequence state.
+- Flags deterministic continuity errors (`LED-501` & `LED-502`).
 
 Repository Target: `scripts/lib/resource_ledger.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import asdict, dataclass
+import json
+from pathlib import Path
+import sys
 from typing import Any
+
+try:
+    from lib.vault_index import VaultIndex
+except ImportError:
+    from vault_index import VaultIndex
 
 
 @dataclass(frozen=True)
@@ -49,7 +52,7 @@ class ChapterResourceDelta:
 class LedgerViolation:
     """Detected resource conservation or capacity cap breach."""
 
-    rule_id: str  # "LED-501" | "LED-502"
+    rule_id: str
     chapter_index: int
     chapter_title: str
     entity_name: str
@@ -142,49 +145,60 @@ def audit_resource_conservation(
     }
 
 
-def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum ledger-audit`."""
-    import argparse
-    import json
-    import sys
+def audit_vault_resources(vault_root: Path) -> dict[str, Any]:
+    """Automatically scan `Characters/`, `Magic-Technology/`, `Artifacts/`, and chapter `state_delta` blocks."""
+    index = VaultIndex(vault_root)
+    nodes = index.scan_vault()
 
+    pools: list[ResourcePoolSpec] = []
+    deltas: list[ChapterResourceDelta] = []
+
+    for idx_num, node in enumerate(nodes, start=1):
+        fm = node.frontmatter
+        rel = node.relative_path
+        entity = str(fm.get("entity") or fm.get("pov") or node.directives.get("pov") or Path(rel).stem)
+
+        if isinstance(fm.get("resource_pools"), dict):
+            for res_name, init_val in fm["resource_pools"].items():
+                if isinstance(init_val, (int, float)):
+                    pools.append(
+                        ResourcePoolSpec(
+                            entity_name=entity,
+                            resource_name=str(res_name),
+                            initial_value=float(init_val),
+                        )
+                    )
+
+        if isinstance(fm.get("state_delta"), dict):
+            chap_idx = int(fm.get("chapter", idx_num))
+            chap_title = str(fm.get("title") or Path(rel).stem)
+            for res_name, delta_val in fm["state_delta"].items():
+                if isinstance(delta_val, (int, float)):
+                    deltas.append(
+                        ChapterResourceDelta(
+                            chapter_index=chap_idx,
+                            chapter_title=chap_title,
+                            entity_name=entity,
+                            resource_name=str(res_name),
+                            delta=float(delta_val),
+                        )
+                    )
+
+    return audit_resource_conservation(pools=pools, deltas=deltas)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum ledger-audit` / `arcanum resource-ledger`."""
     parser = argparse.ArgumentParser(
         prog="arcanum ledger-audit",
-        description="Audit magic spell slots, ammunition, and resource conservation bounds.",
+        description="Audit hard-magic and sci-fi resource conservation across manuscript chapters.",
     )
-    parser.add_argument("--entity", default="Protagonist", help="Character or faction name")
-    parser.add_argument("--resource", default="mana", help="Resource identifier")
-    parser.add_argument("--initial", type=float, default=100.0, help="Initial resource balance (default: 100)")
-    parser.add_argument("--min", type=float, default=0.0, help="Minimum balance bound (default: 0)")
-    parser.add_argument("--max", type=float, default=100.0, help="Maximum capacity bound (default: 100)")
-    parser.add_argument("--json", action="store_true", help="Output JSON results")
+    parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault or manuscript directory")
     args = parser.parse_args(argv)
 
-    pools = [
-        ResourcePoolSpec(
-            entity_name=args.entity,
-            resource_name=args.resource,
-            initial_value=args.initial,
-            min_bound=args.min,
-            max_bound=args.max,
-        )
-    ]
-    deltas = [
-        ChapterResourceDelta(1, "Sample Scene", args.entity, args.resource, 0.0, "Baseline check")
-    ]
-    res = audit_resource_conservation(pools=pools, deltas=deltas)
-    if args.json:
-        sys.stdout.write(json.dumps(res, indent=2) + "\n")
-    else:
-        sys.stdout.write(f"Ars Arcanum Resource Conservation Ledger — {args.entity}::{args.resource}\n")
-        sys.stdout.write("-" * 65 + "\n")
-        status = "PASSED" if res["passed"] else "VIOLATIONS FOUND"
-        sys.stdout.write(f"Status: {status}\n")
-        for k, bal in res["final_balances"].items():
-            sys.stdout.write(f"  • {k}: {bal}\n")
-        for v in res["violations"]:
-            sys.stdout.write(f"  [{v['rule_id']}] {v['message']}\n")
-    return 0 if res["passed"] else 1
+    result = audit_vault_resources(args.vault)
+    sys.stdout.write(json.dumps(result, indent=2) + "\n")
+    return 0 if result["passed"] else 1
 
 
 if __name__ == "__main__":

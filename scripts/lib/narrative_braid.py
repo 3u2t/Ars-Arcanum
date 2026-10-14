@@ -1,27 +1,28 @@
-"""Interactive Pacing, POV Balance & Subplot Braid Matrix (`arcanum braid --html`).
+"""Interactive Pacing, POV Balance & Subplot Braid Matrix (`arcanum braid`).
 
 Analyzes `@pov:`, `@subplot:`, and `@tension:` directives across a multi-POV manuscript:
 1. Calculates POV word-share percentages and dialogue-to-narration pacing curves.
-2. Detects POV & Subplot Droughts (`BRD-601`): flags when a primary POV character or active
-   subplot disappears for more than `max_drought_words` (default: `25,000` words) of manuscript text.
+2. Detects POV & Subplot Droughts (`BRD-601`).
 3. Renders a self-contained, air-gapped HTML + SVG swimlane braid visualization with strict
-   Content-Security-Policy (`default-src 'none'; style-src 'unsafe-inline'`) matching `AGENTS.md`.
+   Content-Security-Policy (`default-src 'none'; style-src 'unsafe-inline'`).
 
 Repository Target: `scripts/lib/narrative_braid.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
-import html
+import argparse
 from dataclasses import asdict, dataclass
+import html
+import json
 from pathlib import Path
+import sys
 from typing import Any
 
 try:
-    from scripts.lib.vault_index import atomic_write
+    from lib.vault_index import VaultIndex, atomic_write
 except ImportError:
-    from vault_index import atomic_write
+    from vault_index import VaultIndex, atomic_write
 
 
 @dataclass(frozen=True)
@@ -34,15 +35,15 @@ class ChapterBraidNode:
     subplots: tuple[str, ...]
     word_count: int
     dialogue_ratio: float
-    tension_score: int = 5  # 1..10 scale
+    tension_score: int = 5
 
 
 @dataclass(frozen=True)
 class BraidDroughtAlert:
     """Advisory alert when a POV character or subplot is absent for too many consecutive words."""
 
-    rule_id: str  # "BRD-601"
-    thread_type: str  # "POV" | "SUBPLOT"
+    rule_id: str
+    thread_type: str
     thread_name: str
     from_chapter: int
     to_chapter: int
@@ -162,7 +163,7 @@ def render_braid_html(
   <h1>Ars Arcanum — Narrative Braid &amp; POV Pacing Matrix</h1>
   <div class="card">
     <h2>POV Swimlane Braid ({report['total_words']:,} Total Words across {report['chapter_count']} Chapters)</h2>
-    <svg width="{svg_width}" height="{svg_height}" xmlns="http://www.w3.org/2000/svg">
+    <svg width="{svg_width}" height="{svg_height}">
       {''.join(svg_rows)}
     </svg>
   </div>
@@ -178,89 +179,54 @@ def render_braid_html(
     return html_doc
 
 
-def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `arcanum braid`."""
-    import argparse
-    import json
-    import re
-    import sys
+def scan_manuscript_braid(vault_root: Path) -> list[ChapterBraidNode]:
+    """Scan a manuscript directory via `VaultIndex` and build ordered `ChapterBraidNode` objects."""
+    index = VaultIndex(vault_root)
+    nodes = index.scan_vault()
+    chapters: list[ChapterBraidNode] = []
 
-    parser = argparse.ArgumentParser(
-        prog="arcanum braid",
-        description="Render interactive POV swimlane braid and audit character droughts.",
-    )
-    parser.add_argument("target", nargs="?", default=".", help="Target manuscript or chapter directory")
-    parser.add_argument("--html", "-o", type=Path, help="Export path for offline HTML+SVG swimlane braid")
-    parser.add_argument(
-        "--drought",
-        type=int,
-        default=25_000,
-        help="Max absent word threshold for POV drought alert (default: 25,000)",
-    )
-    parser.add_argument("--json", action="store_true", help="Output JSON analysis report")
-    args = parser.parse_args(argv)
+    for idx_num, node in enumerate(nodes, start=1):
+        fm = node.frontmatter
+        pov = str(fm.get("pov") or node.directives.get("pov") or "Omniscient")
+        raw_subplots = fm.get("subplots") or node.directives.get("subplot") or ()
+        if isinstance(raw_subplots, str):
+            subplots = tuple(s.strip() for s in raw_subplots.split(",") if s.strip())
+        elif isinstance(raw_subplots, (list, tuple)):
+            subplots = tuple(str(s).strip() for s in raw_subplots if str(s).strip())
+        else:
+            subplots = ()
 
-    target_path = Path(args.target).resolve()
-    chapter_nodes: list[ChapterBraidNode] = []
-
-    if target_path.is_file() and target_path.suffix.lower() == ".md":
-        md_files = [target_path]
-    elif target_path.is_dir():
-        md_files = sorted(
-            [
-                p
-                for p in target_path.rglob("*.md")
-                if not any(part.startswith((".", "Backups", "Export")) for part in p.parts)
-            ],
-            key=lambda p: p.name,
-        )
-    else:
-        md_files = []
-
-    for idx, p in enumerate(md_files, start=1):
-        text = p.read_text(encoding="utf-8", errors="ignore")
-        pov_match = re.search(r"^\s*@pov\s*:\s*(.+)$", text, re.MULTILINE | re.IGNORECASE)
-        tension_match = re.search(r"^\s*@tension\s*:\s*(\d+)", text, re.MULTILINE | re.IGNORECASE)
-        words = len(re.findall(r"\b\w+\b", text))
-        pov = pov_match.group(1).strip() if pov_match else "Default"
-        tension = int(tension_match.group(1)) if tension_match else 5
-        chapter_nodes.append(
+        tension = int(fm.get("tension") or node.directives.get("tension") or 5)
+        chapters.append(
             ChapterBraidNode(
-                chapter_index=idx,
-                chapter_title=p.stem,
+                chapter_index=int(fm.get("chapter", idx_num)),
+                chapter_title=str(fm.get("title") or Path(node.relative_path).stem),
                 pov_character=pov,
-                subplots=(),
-                word_count=words,
-                dialogue_ratio=0.35,
+                subplots=subplots,
+                word_count=node.metrics.total_words,
+                dialogue_ratio=node.metrics.dialogue_ratio,
                 tension_score=tension,
             )
         )
+    return chapters
 
-    if not chapter_nodes:
-        chapter_nodes = [
-            ChapterBraidNode(1, "Prologue", "POV-1", (), 3500, 0.3, 5),
-            ChapterBraidNode(2, "Chapter 1", "POV-2", (), 4200, 0.4, 6),
-        ]
 
-    analysis = analyze_narrative_braid(chapter_nodes, max_drought_words=args.drought)
-    if args.html:
-        render_braid_html(chapter_nodes, args.html, max_drought_words=args.drought)
-        sys.stdout.write(f"✓ Standalone offline HTML braid matrix written to: {args.html}\n")
-    elif args.json:
-        sys.stdout.write(json.dumps(analysis, indent=2) + "\n")
-    else:
-        sys.stdout.write(
-            f"Ars Arcanum Narrative Braid — {analysis['chapter_count']} Chapters ({analysis['total_words']:,} words)\n"
-        )
-        sys.stdout.write("-" * 65 + "\n")
-        for pov, pct in analysis["pov_word_shares_pct"].items():
-            sys.stdout.write(f"  • POV '{pov}': {pct}% ({analysis['pov_word_totals'][pov]:,} words)\n")
-        if analysis["drought_alerts"]:
-            sys.stdout.write("\n⚠️  Drought Alerts:\n")
-            for a in analysis["drought_alerts"]:
-                sys.stdout.write(f"  [{a['rule_id']}] {a['message']}\n")
-        else:
-            sys.stdout.write("\n✓ No POV drought anomalies detected.\n")
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum braid` / `arcanum narrative-braid`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum braid",
+        description="Analyze multi-POV pacing, detect character droughts, and export an HTML/SVG braid matrix.",
+    )
+    parser.add_argument("manuscript", nargs="?", type=Path, default=Path.cwd(), help="Manuscript or vault path")
+    parser.add_argument("--html", type=Path, default=None, help="Optional output HTML path for the SVG braid")
+    parser.add_argument("--max-drought-words", type=int, default=25_000, help="POV drought word threshold")
+    args = parser.parse_args(argv)
+
+    chapters = scan_manuscript_braid(args.manuscript)
+    if args.html is not None:
+        render_braid_html(chapters, args.html, max_drought_words=args.max_drought_words)
+    report = analyze_narrative_braid(chapters, max_drought_words=args.max_drought_words)
+    sys.stdout.write(json.dumps(report, indent=2) + "\n")
     return 0
 
 

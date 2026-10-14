@@ -1,43 +1,29 @@
 """Shared Hierarchical Paragraph-Hash Diff Engine & Hardlink Draft Promotion (Phase 2A Refactor).
 
-Eliminates the duplicated $O(N^2)$ diff pipelines across `scripts/lib/manuscript_diff.py` and
+Eliminates duplicated $O(N^2)$ diff pipelines across `scripts/lib/manuscript_diff.py` and
 `scripts/lib/revision_heatmap.py`, and replaces slow recursive directory copies in
-`scripts/lib/draft_manager.py` with $O(1)$ OS hardlink snapshots (`os.link` with copy fallback)
-that safely break on write via `atomic_write` (`os.replace`).
-
-Key Capabilities:
-1. Two-Level Hierarchical Diffing:
-   - Level 1: SHA-256 paragraph-hash comparison skips identical paragraphs in $O(1)$ time.
-   - Level 2: Invokes `difflib.SequenceMatcher` only on modified paragraph pairs, preventing
-     quadratic bottlenecks on 200,000-word novels.
-2. Automatic Scrap Extraction:
-   - Excised prose blocks >= `min_scrap_words` (default: 50 words) are automatically archived
-     to `Scraps/<timestamp>_<chapter_stem>.md` using `atomic_write`.
-3. Revision Churn Diagnostics (`REV-101` through `REV-106`):
-   - Evaluates paragraph and word churn ratios for `revision_heatmap.py`.
-4. Hardlink Draft Promotion (`promote_draft_hardlinked`):
-   - Branches `Draft-01` -> `Draft-02` using OS hardlinks for Markdown chapters and writes a
-     `.locked` immutability seal on the parent draft.
+`scripts/lib/draft_manager.py` with $O(1)$ OS hardlink snapshots (`os.link` with copy fallback).
 
 Repository Target: `scripts/lib/diff_core.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
+import argparse
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import difflib
 import hashlib
 import json
 import os
+from pathlib import Path
 import re
 import shutil
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+import sys
 from typing import Any
 
 try:
-    from scripts.lib.vault_index import PathSecurityError, atomic_write, is_safe_subpath, parse_frontmatter
+    from lib.vault_index import PathSecurityError, atomic_write, is_safe_subpath, parse_frontmatter
 except ImportError:
     from vault_index import PathSecurityError, atomic_write, is_safe_subpath, parse_frontmatter
 
@@ -49,7 +35,7 @@ _NOVELWRITER_TAG_RE = re.compile(r"^\s*@[a-zA-Z0-9_]+\s*:.*$", re.MULTILINE)
 class ParagraphDelta:
     """Word-level delta for a single added, deleted, or modified paragraph."""
 
-    change_type: str  # "unchanged" | "modified" | "added" | "deleted"
+    change_type: str
     old_index: int | None
     new_index: int | None
     old_text: str
@@ -111,7 +97,6 @@ def compare_chapter_hierarchical(
     old_hashes = [_hash_paragraph(p) for p in old_paras]
     new_hashes = [_hash_paragraph(p) for p in new_paras]
 
-    # Fast sequence alignment on 16-char paragraph hashes
     para_matcher = difflib.SequenceMatcher(None, old_hashes, new_hashes, autojunk=False)
     deltas: list[ParagraphDelta] = []
     excised_cuts: list[str] = []
@@ -141,7 +126,6 @@ def compare_chapter_hierarchical(
                     )
                 )
         elif tag == "replace":
-            # Pairwise compare replaced paragraph spans at the word token level
             old_span = old_paras[i1:i2]
             new_span = new_paras[j1:j2]
             paired = min(len(old_span), len(new_span))
@@ -175,7 +159,6 @@ def compare_chapter_hierarchical(
                         similarity_ratio=round(word_matcher.ratio(), 4),
                     )
                 )
-            # Handle any trailing unmatched paragraphs in the replacement block
             for k in range(paired, len(old_span)):
                 old_p = old_span[k]
                 w_cnt = _count_words(old_p)
@@ -256,7 +239,6 @@ def compare_chapter_hierarchical(
     baseline = max(1, old_words)
     churn_ratio = round((words_added_total + words_deleted_total) / baseline, 4)
 
-    # Evaluate canonical REV-101..REV-106 advisory diagnostics
     diagnostics: list[str] = []
     if words_added_total == 0 and words_deleted_total == 0:
         diagnostics.append("REV-101: Pristine chapter (zero revision churn detected across drafts).")
@@ -307,10 +289,7 @@ def promote_draft_hardlinked(
     milestone_tag: str = "Revision",
     lock_parent: bool = True,
 ) -> dict[str, Any]:
-    """Branch `parent_draft_name` (e.g. `Draft-01`) into `new_draft_name` (e.g. `Draft-02`)
-    using OS hardlinks (`os.link`) instead of expensive byte-by-byte copies, and seal the parent
-    with a `.locked` manifest.
-    """
+    """Branch `parent_draft_name` into `new_draft_name` using OS hardlinks (`os.link`)."""
     root = manuscript_root.resolve()
     parent_dir = root / parent_draft_name
     target_dir = root / new_draft_name
@@ -326,14 +305,14 @@ def promote_draft_hardlinked(
     for dirpath, dirnames, filenames in os.walk(parent_dir):
         dirnames[:] = [d for d in dirnames if not d.startswith(".")]
         rel_dir = Path(dirpath).relative_to(parent_dir)
-        dest_Subdir = target_dir / rel_dir
-        dest_Subdir.mkdir(parents=True, exist_ok=True)
+        dest_subdir = target_dir / rel_dir
+        dest_subdir.mkdir(parents=True, exist_ok=True)
 
         for fname in filenames:
             if fname == ".locked" or fname.startswith("."):
                 continue
             src_file = Path(dirpath) / fname
-            dst_file = dest_Subdir / fname
+            dst_file = dest_subdir / fname
             try:
                 os.link(src_file, dst_file)
             except OSError:
@@ -360,3 +339,30 @@ def promote_draft_hardlinked(
         atomic_write(parent_dir / ".locked", json.dumps(lock_payload, indent=2))
 
     return lineage_meta
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum diff-fast`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum diff-fast",
+        description="Run two-level SHA-256 paragraph-hash diffing between two Markdown files.",
+    )
+    parser.add_argument("old_file", type=Path, help="Baseline Markdown file")
+    parser.add_argument("new_file", type=Path, help="Revised Markdown file")
+    parser.add_argument("--scraps-dir", type=Path, default=None, help="Optional directory to archive cuts >= 50 words")
+    args = parser.parse_args(argv)
+
+    old_md = args.old_file.read_text(encoding="utf-8")
+    new_md = args.new_file.read_text(encoding="utf-8")
+    report = compare_chapter_hierarchical(
+        args.new_file.stem,
+        old_md,
+        new_md,
+        scraps_dir=args.scraps_dir,
+    )
+    sys.stdout.write(json.dumps(asdict(report), indent=2) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

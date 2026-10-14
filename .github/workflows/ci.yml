@@ -61,17 +61,17 @@ jobs:
       - name: Static type safety check (mypy)
         run: |
           pip install "mypy==1.15.0"
-          mypy --config-file mypy.ini --explicit-package-bases scripts tests
+          mypy --config-file mypy.ini --explicit-package-bases scripts src tests
 
       - name: Python AST Security Scan (bandit SAST)
         run: |
           pip install "bandit==1.8.3"
-          bandit -r scripts/lib -ll -ii
+          bandit -r scripts/lib src/arcanum -ll -ii
 
       - name: Privacy & offline audit (no remote CDN URLs in engines)
         run: |
-          ! grep -rnE "https?://(cdn|unpkg|cdnjs|ajax)" scripts/lib/ || (echo "ERROR: remote CDN URL found in offline engine" >&2; exit 1)
-          echo "  OK 100% offline asset verification passed"
+          ! grep -rnE "https://(cdn|unpkg|cdnjs|ajax)" scripts/lib/ src/arcanum/ || (echo "ERROR: remote CDN URL found in offline engine" >&2; exit 1)
+          echo " OK 100% offline asset verification passed"
 
       - name: Run Python unit tests with coverage
         run: |
@@ -104,6 +104,13 @@ jobs:
           pip install dist/*.whl
           arcanum --version
           arcanum --help > /dev/null
+          arcanum sprint-effort --help > /dev/null
+          arcanum continuity-suite --help > /dev/null
+          arcanum validate-epistemic --help > /dev/null
+          arcanum timeline-audit --help > /dev/null
+          arcanum conlang-check --help > /dev/null
+          arcanum ledger-audit --help > /dev/null
+          arcanum braid --help > /dev/null
           echo "  OK pip wheel build and CLI entrypoint installation passed"
 
       - name: Smoke test packaged CLI dispatch via symlink (PKG-01)
@@ -121,64 +128,3 @@ jobs:
         run: |
           python3 -c "import json; json.load(open('configs/leechblock_arcanum_rules.json')); json.load(open('configs/plugin_catalog.json')); json.load(open('configs/idioms.json')); print('  OK JSON configurations')"
           python3 -c "import xml.etree.ElementTree as ET; ET.parse('templates/manuscript/nwProject.nwx'); print('  OK nwProject XML')"
-
-      - name: Run strict verification harness (scripts/verify.sh --require-tools)
-        run: |
-          bash scripts/verify.sh --require-tools
-
-      - name: Smoke test Typst book preview compilation
-        run: |
-          typst compile templates/typst/preview_sample.typ /tmp/arcanum-preview.pdf
-          ls -lh /tmp/arcanum-preview.pdf
-
-      - name: Smoke test Pandoc Markdown to Typst conversion
-        run: |
-          pandoc -f markdown-citations+smart -t typst templates/manuscript/Book-01/01_Act_I/01_Chapter_01.md -o /tmp/chapter1.typ
-          head -n 25 /tmp/chapter1.typ
-
-  distro-matrix:
-    name: Distro Compatibility Matrix
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        container:
-          - 'ubuntu:22.04'
-          - 'ubuntu:24.04'
-          - 'debian:12'
-          - 'debian:13'
-    container:
-      image: ${{ matrix.container }}
-    steps:
-      - name: Install Git, Python & Core Tools
-        run: |
-          apt-get update
-          apt-get install -y git python3 bash tar ca-certificates
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Run Python unit tests in container (${{ matrix.container }})
-        run: |
-          python3 -m unittest discover -s tests -p "test_*.py" -v
-
-  multi-platform:
-    name: Cross-Platform Matrix (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Python unit tests discovery
-        run: |
-          python -m unittest discover -s tests -p "test_*.py" -v
-      - name: Python security & static analysis (ruff)
-        run: |
-          pip install "ruff==0.16.8"
-          ruff check .

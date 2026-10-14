@@ -2,28 +2,23 @@
 
 Hardens `scripts/lib/registry.py` by executing third-party or user plugins located in
 `.arcanum/plugins/*.py` inside an isolated Python subprocess (`python3 -I`) communicating
-strictly via JSON over `stdin`/`stdout` with:
-- Path traversal verification (`is_safe_subpath`) so only plugins inside the vault or canonical
-  `configs/plugins/` directory can be invoked.
-- Isolated interpreter mode (`-I`: no user site-packages or `PYTHONPATH` injection).
-- Sanitized environment variables (`LC_ALL=C.UTF-8`, `PYTHONIOENCODING=utf-8`).
-- Strict wall-clock execution timeout (default: `5.0` seconds) and output byte cap.
+strictly via JSON over `stdin`/`stdout`.
 
 Repository Target: `scripts/lib/plugin_sandbox.py`
-Reference: https://github.com/aryansinghnagar/Ars-Arcanum
 """
 
 from __future__ import annotations
 
+import argparse
+from dataclasses import asdict, dataclass
 import json
-import subprocess
-import sys
-from dataclasses import dataclass
 from pathlib import Path
+import subprocess  # nosec B404
+import sys
 from typing import Any
 
 try:
-    from scripts.lib.vault_index import PathSecurityError, is_safe_subpath
+    from lib.vault_index import PathSecurityError, is_safe_subpath
 except ImportError:
     from vault_index import PathSecurityError, is_safe_subpath
 
@@ -67,7 +62,7 @@ def run_plugin_sandboxed(
     }
 
     try:
-        completed = subprocess.run(
+        completed = subprocess.run(  # nosec B603
             [sys.executable, "-I", "-B", str(resolved_script)],
             input=input_json,
             capture_output=True,
@@ -110,3 +105,30 @@ def run_plugin_sandboxed(
         output=parsed,
         stderr_log=completed.stderr.strip(),
     )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum plugin-sandbox`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum plugin-sandbox",
+        description="Execute a custom Ars Arcanum Python plugin in an isolated subprocess sandbox.",
+    )
+    parser.add_argument("plugin_script", type=Path, help="Path to plugin .py file")
+    parser.add_argument("--payload", default="{}", help="JSON payload string passed to stdin")
+    parser.add_argument("--allowed-root", type=Path, default=Path.cwd(), help="Allowed root directory")
+    parser.add_argument("--timeout", type=float, default=5.0, help="Execution timeout in seconds")
+    args = parser.parse_args(argv)
+
+    payload_dict = json.loads(args.payload)
+    res = run_plugin_sandboxed(
+        args.plugin_script,
+        payload_dict,
+        allowed_roots=(args.allowed_root,),
+        timeout_seconds=args.timeout,
+    )
+    sys.stdout.write(json.dumps(asdict(res), indent=2) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
