@@ -7,10 +7,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    # C-03: weekly drift detection — catches action/toolchain rot between pushes
+    # C-03: weekly drift detection – catches action/toolchain rot between pushes
     - cron: '23 4 * * 1'
 
-# C-03: least privilege — this workflow only needs to read the repository.
+# C-03: least privilege – this workflow only needs to read the repository.
 permissions:
   contents: read
 
@@ -36,7 +36,7 @@ jobs:
           sudo apt-get install -y shellcheck desktop-file-utils pandoc libxml2-utils xvfb gir1.2-gtk-3.0 gir1.2-gtk-4.0 gir1.2-adw-1 libadwaita-1-0 python3-gi
 
       - name: Set up Typst
-        uses: typst-community/setup-typst@9107b8dd77d7a7fd6c5faebbb507cac28069042e # v5.3
+        uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3
         with:
           typst-version: '0.14.2'
 
@@ -85,10 +85,10 @@ jobs:
           for f in scripts/*.sh scripts/arcanum scripts/ars-arcanum; do
             [ -f "$f" ] || continue
             if ! bash -n "$f"; then
-              echo "  FAIL $f (bash syntax)" >&2
+              echo " FAIL $f (bash syntax)" >&2
               status=1
             else
-              echo "  OK $f"
+              echo " OK $f"
             fi
           done
           exit $status
@@ -111,7 +111,7 @@ jobs:
           arcanum conlang-check --help > /dev/null
           arcanum ledger-audit --help > /dev/null
           arcanum braid --help > /dev/null
-          echo "  OK pip wheel build and CLI entrypoint installation passed"
+          echo " OK pip wheel build and CLI entrypoint installation passed"
 
       - name: Smoke test packaged CLI dispatch via symlink (PKG-01)
         run: |
@@ -122,9 +122,9 @@ jobs:
           /tmp/pkg-test/bin/arcanum --version
           /tmp/pkg-test/bin/arcanum --help > /dev/null
           /tmp/pkg-test/bin/ars-arcanum --version
-          echo "  OK symlinked CLI dispatches"
+          echo " OK symlinked CLI dispatches"
 
       - name: Validate JSON, YAML and XML configurations
         run: |
-          python3 -c "import json; json.load(open('configs/leechblock_arcanum_rules.json')); json.load(open('configs/plugin_catalog.json')); json.load(open('configs/idioms.json')); print('  OK JSON configurations')"
-          python3 -c "import xml.etree.ElementTree as ET; ET.parse('templates/manuscript/nwProject.nwx'); print('  OK nwProject XML')"
+          python3 -c "import json; json.load(open('configs/leechblock_arcanum_rules.json')); json.load(open('configs/plugin_catalog.json')); json.load(open('configs/idioms.json')); print(' OK JSON configurations')"
+          python3 -c "import xml.etree.ElementTree as ET; ET.parse('templates/manuscript/nwProject.nwx'); print(' OK nwProject XML')"

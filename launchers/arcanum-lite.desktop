@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Ars Arcanum Lite Mode
-Comment=Run the 4 flagship deterministic continuity compilers and refresh Obsidian Lite Dashboard
-Exec=python3 scripts/arcanum-lite .
-Icon=accessories-text-editor
-Terminal=true
-Categories=Office;Publishing;Utility;

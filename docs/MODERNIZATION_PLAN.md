@@ -4,13 +4,11 @@
 2. **Phase 2 — Hierarchical Diffing, Hardlink Drafts & Strict Typed Constitution**: Added `scripts/lib/diff_core.py` (`arcanum diff-fast`), `scripts/lib/typed_constitution.py` (`arcanum typed-constitution`), and strict per-module Mypy typing in `mypy.ini`.
 3. **Phase 3 — OpenXML Tracked Changes DOM Bridge & Subprocess Plugin Sandbox**: Added `scripts/lib/docx_tracked_changes.py` (`arcanum docx-tracked`) and `scripts/lib/plugin_sandbox.py` (`arcanum plugin-sandbox`).
 4. **Phase 4 — Six Deterministic Continuity Engines & Live Obsidian Callout Bridge**: Added `phase_effort_engine.py`, `epistemic_firewall.py`, `timeline_solver.py`, `conlang_linter.py`, `resource_ledger.py`, `narrative_braid.py`, and `vault_continuity_runner.py` (`_Arcanum_Diagnostics.md`).
-5. **Phase 5 — Audit Consolidation, Stdlib Parser Fuzz Hardening & Obsidian Lite Mode (`v0.2.0`)**: Added `scripts/lib/audit_hardening.py`, `src/arcanum/cli_bridge.py`, `scripts/arcanum-lite`, 3-tier documentation index (`docs/INDEX.md`, `docs/LITE_MODE.md`), collaborative narrative CI (`.github/workflows/narrative-continuity-ci.yml`), and fuzz-test coverage (`tests/test_audit_fuzz_hardening.py`).
-
+5. **Phase 5 — Production Audit Hardening, 3-Tier Documentation & Obsidian Lite Mode**: Added `scripts/lib/audit_hardening.py`, `src/arcanum/cli_bridge.py`, 3-tier documentation index (`docs/INDEX.md`, `docs/LITE_MODE.md`), SHA-pinned CI (`.github/workflows/narrative-continuity-ci.yml`), and fuzz-test coverage (`tests/test_audit_fuzz_hardening.py`).
 
 <!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
 ## Phase 1-4 Production CLI & Continuity Cross-Reference
 
-- **Obsidian Lite Mode (4 Core Compilers + 5-Plugin Profile)**: `python scripts/arcanum-lite [VAULT]` (`src/arcanum/cli_bridge.py`)
 - **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
 - **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
 - **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)

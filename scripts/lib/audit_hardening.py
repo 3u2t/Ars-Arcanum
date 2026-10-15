@@ -10,11 +10,14 @@ Provides zero-dependency Python 3.10+ stdlib hardening for:
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
 import unicodedata
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405
 import zipfile
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -55,7 +58,7 @@ class LiteCheckReport:
     status: str
     total_issues: int
     counts_by_prefix: dict[str, int]
-    findings: list[dict[str, Any]] = field(default_factory=list)
+    findings: list[dict[str, str]] = field(default_factory=list)
     dashboard_path: Path | None = None
     profile_path: Path | None = None
 
@@ -83,8 +86,10 @@ def validate_safe_zip_archive(
             raise ValueError(msg)
         for info in infos:
             raw_name = info.filename
-            norm_path = Path(raw_name)
-            if raw_name.startswith(("/", "\\")) or ".." in norm_path.parts:
+            norm_str = raw_name.replace("\\", "/")
+            norm_path = Path(norm_str)
+            has_drive = len(norm_str) >= 2 and norm_str[1] == ":" and norm_str[0].isalpha()
+            if norm_str.startswith("/") or has_drive or ".." in norm_path.parts:
                 msg = f"Unsafe path traversal entry in ZIP archive: {raw_name}"
                 raise ValueError(msg)
             total_uncompressed += info.file_size
@@ -109,7 +114,7 @@ def parse_xml_safe_bytes(xml_bytes: bytes | str) -> ET.Element:
     if _XML_FORBIDDEN_DECL_RE.search(raw):
         msg = "XML payload rejected: DOCTYPE and ENTITY declarations are forbidden."
         raise ValueError(msg)
-    return ET.fromstring(raw)
+    return ET.fromstring(raw)  # nosec B314
 
 
 def parse_frontmatter_hardened(
@@ -151,15 +156,6 @@ def parse_frontmatter_hardened(
             msg = f"YAML frontmatter indentation depth exceeds max_yaml_depth ({cfg.max_yaml_depth})."
             raise ValueError(msg)
 
-    try:
-        from scripts.lib.vault_index import parse_frontmatter as _base_parse_frontmatter
-
-        parsed_meta, parsed_body = _base_parse_frontmatter(cleaned)
-        if isinstance(parsed_meta, dict) and parsed_meta:
-            return parsed_meta, parsed_body
-    except Exception:
-        pass
-
     metadata: dict[str, Any] = {}
     current_key: str | None = None
     list_buffer: list[Any] | None = None
@@ -199,9 +195,7 @@ def parse_frontmatter_hardened(
 
 def _coerce_yaml_scalar(raw_val: str) -> Any:
     """Coerce a simple YAML scalar string into bool, int, float, or unquoted str."""
-    if (raw_val.startswith('"') and raw_val.endswith('"')) or (
-        raw_val.startswith("'") and raw_val.endswith("'")
-    ):
+    if len(raw_val) >= 2 and raw_val[0] == raw_val[-1] and raw_val[0] in {'"', "'"}:
         return raw_val[1:-1]
     lower = raw_val.lower()
     if lower in ("true", "yes"):
@@ -280,32 +274,31 @@ def export_markdown_to_docx_hardened(
     docx_path: Path,
     author: str = "Ars Arcanum",
 ) -> Path:
-    """Sanitize CriticMarkup and Unicode before delegating to `export_markdown_to_docx`."""
+    """Sanitize CriticMarkup and Unicode before exporting OpenXML `.docx` tracked changes."""
     raw_text = Path(markdown_path).read_text(encoding="utf-8")
     norm_text = str(normalize_cjk_and_unicode_prose(raw_text)["text"])
     safe_text = sanitize_critic_markup(norm_text)
+    target_docx = Path(docx_path)
 
+    wrote_via_delegate = False
     try:
-        from scripts.lib.docx_tracked_changes import (
-            build_tracked_document_xml,
-            export_markdown_to_docx,
-        )
+        from scripts.lib.docx_tracked_changes import export_markdown_to_docx
 
-        if safe_text == raw_text:
-            export_markdown_to_docx(Path(markdown_path), Path(docx_path), author=author)
-        else:
-            tmp_md = Path(docx_path).with_suffix(".sanitized.tmp.md")
-            try:
-                tmp_md.write_text(safe_text, encoding="utf-8")
-                export_markdown_to_docx(tmp_md, Path(docx_path), author=author)
-            finally:
-                tmp_md.unlink(missing_ok=True)
-        _ = build_tracked_document_xml
-    except ImportError:
-        _write_minimal_tracked_docx(safe_text, Path(docx_path), author=author)
+        tmp_md = target_docx.with_suffix(".sanitized.tmp.md")
+        try:
+            tmp_md.write_text(safe_text, encoding="utf-8")
+            export_markdown_to_docx(tmp_md, target_docx, author=author)
+            wrote_via_delegate = target_docx.is_file()
+        finally:
+            tmp_md.unlink(missing_ok=True)
+    except Exception:
+        wrote_via_delegate = False
 
-    validate_safe_zip_archive(docx_path)
-    return Path(docx_path)
+    if not wrote_via_delegate:
+        _write_minimal_tracked_docx(safe_text, target_docx, author=author)
+
+    validate_safe_zip_archive(target_docx)
+    return target_docx
 
 
 def pull_docx_to_markdown_hardened(
@@ -313,35 +306,38 @@ def pull_docx_to_markdown_hardened(
     markdown_path: Path | None = None,
 ) -> str:
     """Validate `.docx` archive safety and XML entities before pulling tracked changes."""
-    validate_safe_zip_archive(docx_path)
-    with zipfile.ZipFile(docx_path, "r") as zf:
+    target_docx = Path(docx_path)
+    validate_safe_zip_archive(target_docx)
+    with zipfile.ZipFile(target_docx, "r") as zf:
         if "word/document.xml" not in zf.namelist():
-            msg = f"Missing word/document.xml inside {docx_path}"
+            msg = f"Missing word/document.xml inside {target_docx}"
             raise ValueError(msg)
         doc_bytes = zf.read("word/document.xml")
     parse_xml_safe_bytes(doc_bytes)
 
+    text_out = ""
     try:
         from scripts.lib.docx_tracked_changes import pull_docx_to_markdown
 
-        if markdown_path is not None:
-            res = pull_docx_to_markdown(Path(docx_path), Path(markdown_path))
-            return res if isinstance(res, str) else Path(markdown_path).read_text(encoding="utf-8")
-        tmp_out = Path(docx_path).with_suffix(".pulled.tmp.md")
+        tmp_out = target_docx.with_suffix(".pulled.tmp.md")
         try:
-            res = pull_docx_to_markdown(Path(docx_path), tmp_out)
-            return res if isinstance(res, str) else tmp_out.read_text(encoding="utf-8")
+            res = pull_docx_to_markdown(target_docx, tmp_out)
+            text_out = res if isinstance(res, str) else (tmp_out.read_text(encoding="utf-8") if tmp_out.is_file() else "")
         finally:
             tmp_out.unlink(missing_ok=True)
-    except (ImportError, TypeError):
+    except Exception:
+        text_out = ""
+
+    if not text_out:
         text_out = _extract_critic_markup_from_xml(doc_bytes)
-        if markdown_path is not None:
-            Path(markdown_path).write_text(text_out, encoding="utf-8")
-        return text_out
+
+    if markdown_path is not None:
+        Path(markdown_path).write_text(text_out, encoding="utf-8")
+    return text_out
 
 
 def _write_minimal_tracked_docx(markdown_text: str, docx_path: Path, author: str) -> None:
-    """Fallback minimal OpenXML builder used when running standalone tests."""
+    """Fallback minimal OpenXML builder used when running standalone or with custom schemas."""
     ns = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
     ET.register_namespace("w", ns)
     doc_el = ET.Element(f"{{{ns}}}document")
@@ -413,19 +409,25 @@ def import_polyglot_lexicon_hardened(
         raw_xml = path.read_bytes()
 
     root = parse_xml_safe_bytes(raw_xml)
+    delegated_items: list[Any] = []
     try:
         from scripts.lib.conlang_linter import import_polyglot_lexicon
 
-        return list(import_polyglot_lexicon(path))
-    except ImportError:
-        lexemes: list[dict[str, str]] = []
-        for word_el in root.iter("word"):
-            val = (word_el.findtext("conWord") or "").strip()
-            local = (word_el.findtext("localWord") or "").strip()
-            ipa = (word_el.findtext("proc") or "").strip()
-            if val:
-                lexemes.append({"con_word": val, "gloss": local, "ipa": ipa})
-        return lexemes
+        delegated_items = list(import_polyglot_lexicon(path))
+    except Exception:
+        delegated_items = []
+
+    if delegated_items:
+        return delegated_items
+
+    lexemes: list[dict[str, str]] = []
+    for word_el in root.iter("word"):
+        val = (word_el.findtext("conWord") or "").strip()
+        local = (word_el.findtext("localWord") or "").strip()
+        ipa = (word_el.findtext("proc") or "").strip()
+        if val:
+            lexemes.append({"con_word": val, "gloss": local, "ipa": ipa})
+    return lexemes
 
 
 def generate_obsidian_lite_profile(vault_root: Path | str) -> Path:
@@ -436,7 +438,7 @@ def generate_obsidian_lite_profile(vault_root: Path | str) -> Path:
     profile_path = obsidian_dir / "lite_profile.json"
     payload = {
         "profile": "ars-arcanum-lite",
-        "version": "0.2.0",
+        "version": "0.1.0",
         "description": "Low-friction 5-plugin Obsidian profile paired with the 4 core deterministic compilers.",
         "enabled_plugins": list(LITE_OBSIDIAN_PLUGINS),
         "enabled_compilers": list(CORE_COMPILER_PREFIXES),
@@ -494,7 +496,7 @@ def run_lite_continuity_check(
         raise FileNotFoundError(msg)
 
     counts: dict[str, int] = dict.fromkeys(CORE_COMPILER_PREFIXES, 0)
-    findings: list[dict[str, Any]] = []
+    findings: list[dict[str, str]] = []
 
     try:
         from scripts.lib.vault_continuity_runner import run_full_vault_continuity_suite
@@ -511,7 +513,10 @@ def run_lite_continuity_check(
                     findings.append({"code": code, "message": msg, "file": file_ref})
                     break
     except Exception:
-        findings.extend(_scan_markdown_lite_heuristics(root, counts))
+        pass
+
+    # Always run heuristic frontmatter & ledger checks so standalone chapter vaults are audited
+    findings.extend(_scan_markdown_lite_heuristics(root, counts))
 
     total = sum(counts.values())
     status = "CLEAN" if total == 0 else "NEEDS_ATTENTION"
@@ -535,12 +540,13 @@ def run_lite_continuity_check(
 def _scan_markdown_lite_heuristics(
     vault_root: Path,
     counts: dict[str, int],
-) -> list[dict[str, Any]]:
-    """Lightweight fallback scan of Markdown frontmatter for `EPI-*` and `LED-*` anomalies."""
-    findings: list[dict[str, Any]] = []
+) -> list[dict[str, str]]:
+    """Scan Markdown frontmatter for malformed YAML (`EPI-000`) and negative resource balances (`LED-001`)."""
+    findings: list[dict[str, str]] = []
     for md_file in sorted(vault_root.rglob("*.md")):
         if md_file.name.startswith("_Arcanum_"):
             continue
+        rel_name = str(md_file.relative_to(vault_root))
         try:
             raw = md_file.read_text(encoding="utf-8")
             meta, _ = parse_frontmatter_hardened(raw)
@@ -550,19 +556,82 @@ def _scan_markdown_lite_heuristics(
                 {
                     "code": "EPI-000",
                     "message": f"Malformed frontmatter block: {exc}",
-                    "file": str(md_file.relative_to(vault_root)),
+                    "file": rel_name,
                 }
             )
             continue
 
         balance = meta.get("resource_balance")
-        if isinstance(balance, int | float) and balance < 0:
+        if isinstance(balance, int | float) and not isinstance(balance, bool) and balance < 0:
             counts["LED-"] += 1
             findings.append(
                 {
                     "code": "LED-001",
                     "message": f"Negative resource conservation balance ({balance}) in chapter frontmatter.",
-                    "file": str(md_file.relative_to(vault_root)),
+                    "file": rel_name,
                 }
             )
     return findings
+
+
+def build_lite_parser() -> argparse.ArgumentParser:
+    """Create the argument parser for `arcanum-lite` / `lite-check`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum-lite",
+        description="One-command Obsidian Lite Mode continuity runner (EPI-*, TIME-*, CON-*, LED-*).",
+    )
+    parser.add_argument(
+        "vault",
+        nargs="?",
+        default=".",
+        help="Path to the target Universe or Manuscript vault directory (default: current directory).",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="Emit machine-readable JSON summary to stdout.",
+    )
+    parser.add_argument(
+        "--no-dashboard",
+        action="store_true",
+        help="Skip writing `_Arcanum_Lite_Dashboard.md` to the vault root.",
+    )
+    return parser
+
+
+def main_lite(argv: Sequence[str] | None = None) -> int:
+    """Execute the Obsidian Lite Mode continuity check from the command line."""
+    args_list = list(sys.argv[1:] if argv is None else argv)
+    if args_list and args_list[0] == "lite-check":
+        args_list = args_list[1:]
+
+    parser = build_lite_parser()
+    parsed = parser.parse_args(args_list)
+    vault_path = Path(parsed.vault).resolve()
+    if not vault_path.exists():
+        print(f"[ERROR] Vault path does not exist: {vault_path}", file=sys.stderr)
+        return 2
+
+    report = run_lite_continuity_check(vault_path, write_dashboard=not parsed.no_dashboard)
+    if parsed.as_json:
+        payload = {
+            "vault_root": str(report.vault_root),
+            "status": report.status,
+            "total_issues": report.total_issues,
+            "counts_by_prefix": report.counts_by_prefix,
+            "dashboard_path": str(report.dashboard_path) if report.dashboard_path else None,
+            "profile_path": str(report.profile_path) if report.profile_path else None,
+        }
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"[ARCANUM LITE] Status: {report.status} | "
+            f"Findings: {report.total_issues} | "
+            f"Dashboard: {report.dashboard_path}"
+        )
+    return 0 if report.total_issues == 0 else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main_lite())

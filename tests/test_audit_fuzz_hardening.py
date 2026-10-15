@@ -137,6 +137,12 @@ class TestAuditFuzzHardening(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_safe_zip_archive(bad_zip)
 
+            win_zip = tmp_dir / "win_drive.zip"
+            with zipfile.ZipFile(win_zip, "w") as zf:
+                zf.writestr("C:/evil.txt", "escape")
+            with self.assertRaises(ValueError):
+                validate_safe_zip_archive(win_zip)
+
             many_zip = tmp_dir / "many.zip"
             with zipfile.ZipFile(many_zip, "w") as zf:
                 for i in range(5):

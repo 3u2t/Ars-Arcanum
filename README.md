@@ -1,8 +1,8 @@
 # 🖋️ Ars Arcanum – Sovereign Authoring Operating System & Craft Studio
 
-[![Release](https://img.shields.io/badge/Release-v0.2.0--amber)](https://github.com/aryansinghnagar/Ars-Arcanum)
+[![Release](https://img.shields.io/badge/Release-v0.1.0--amber)](https://github.com/aryansinghnagar/Ars-Arcanum)
 [![Status](https://img.shields.io/badge/Status-Sovereign_Studio-emerald)](https://github.com/aryansinghnagar/Ars-Arcanum)
-[![Tests](https://img.shields.io/badge/Tests-520%2B_Passing_(100%25)-brightgreen)](https://github.com/aryansinghnagar/Ars-Arcanum/actions)
+[![Tests](https://img.shields.io/badge/Tests-507_Passing_(100%25)-brightgreen)](https://github.com/aryansinghnagar/Ars-Arcanum/actions)
 [![Coverage](https://img.shields.io/badge/Coverage-%E2%89%A589%25-blue)](https://github.com/aryansinghnagar/Ars-Arcanum)
 [![License](https://img.shields.io/badge/License-MIT-purple)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/Dependencies-Zero--Pip_(100%25_Stdlib)-orange)](pyproject.toml)
@@ -23,7 +23,7 @@
 
 ```bash
 # 0. One-Command Obsidian Lite Mode (Runs the 4 flagship compilers + 5-plugin Lite profile)
-python scripts/arcanum-lite ~/Universes/Reliquary/
+python3 -m scripts.lib.audit_hardening ~/Universes/Reliquary/
 
 # 1. Unified Continuity Suite & Live Obsidian Dashboard (_Arcanum_Diagnostics.md)
 python scripts/arcanum continuity-suite ~/Universes/Reliquary/

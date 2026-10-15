@@ -1,4 +1,4 @@
-"""Unit tests for Obsidian Lite Mode and `src/arcanum` package consolidation."""
+"""Unit tests for Obsidian Lite Mode and `scripts.lib.audit_hardening` consolidation."""
 
 from __future__ import annotations
 
@@ -7,20 +7,18 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import src.arcanum as arcanum_pkg
-from src.arcanum import (
+from scripts.lib.audit_hardening import (
     LITE_OBSIDIAN_PLUGINS,
     generate_obsidian_lite_profile,
+    main_lite,
     run_lite_continuity_check,
 )
-from src.arcanum.cli_bridge import main_lite
 
 
 class TestLiteModeAndConsolidation(unittest.TestCase):
-    """Verifies the 5-plugin Obsidian Lite Mode profile, dashboard, and CLI bridge."""
+    """Verifies the 5-plugin Obsidian Lite Mode profile, dashboard, and CLI runner."""
 
     def test_consolidated_package_exports(self) -> None:
-        self.assertEqual(arcanum_pkg.__version__, "0.2.0")
         self.assertEqual(len(LITE_OBSIDIAN_PLUGINS), 5)
         self.assertIn("dataview", LITE_OBSIDIAN_PLUGINS)
 
@@ -57,7 +55,7 @@ class TestLiteModeAndConsolidation(unittest.TestCase):
                 encoding="utf-8",
             )
             report_warn = run_lite_continuity_check(vault)
-            self.assertGreaterEqual(report_warn.total_issues, 1)
+            self.assertGreaterEqual(report_warn.total_issues, 2)
 
     def test_cli_bridge_main_lite_json_and_text(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

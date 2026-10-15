@@ -2,29 +2,35 @@ name: Narrative Continuity & Audit Hardening CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
   workflow_dispatch:
+  schedule:
+    # C-03: weekly drift detection – catches action/toolchain rot between pushes
+    - cron: '23 4 * * 1'
 
+# C-03: least privilege – this workflow only needs to read the repository.
 permissions:
   contents: read
 
 jobs:
   continuity-and-audit-suite:
     name: Zero-Pip Continuity & Fuzz Suite (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -34,5 +40,5 @@ jobs:
       - name: Run Lite Mode Continuity Check on Sample Cosmos
         run: |
           if [ -d "templates/demo-cosmos/Eldoria-Cosmos" ]; then
-            python3 scripts/arcanum-lite templates/demo-cosmos/Eldoria-Cosmos --json
+            python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json
           fi

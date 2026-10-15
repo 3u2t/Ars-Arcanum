@@ -17,13 +17,13 @@ Copy-paste any of the self-contained issues below into GitHub Issues to onboard 
 ## Issue C: `[Good First Issue] Add Relativistic Time-Dilation Lore Examples to Eldoria-Cosmos Template`
 - **Labels**: `good first issue`, `templates`, `worldbuilding`
 - **Target Files**: `templates/demo-cosmos/Eldoria-Cosmos/`, `tests/`
-- **Scope**: Add a sample sci-fi interstellar transit ledger demonstrating `compute_relativistic_proper_days` (`TIME-*`) and `scripts/arcanum-lite`.
-- **Verification**: `python3 scripts/arcanum-lite templates/demo-cosmos/Eldoria-Cosmos`
+- **Scope**: Add a sample sci-fi interstellar transit ledger demonstrating `compute_relativistic_proper_days` (`TIME-*`) and `python3 -m scripts.lib.audit_hardening`.
+- **Verification**: `python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos`
 
 ## Issue D: `[Good First Issue] Create One-Click Obsidian Community Command Snippet for Lite Mode`
 - **Labels**: `good first issue`, `ux`, `obsidian`
 - **Target Files**: `docs/LITE_MODE.md`, `configs/`
-- **Scope**: Provide a pre-configured Obsidian Shell Commands snippet that triggers `python scripts/arcanum-lite` on file save and opens `_Arcanum_Lite_Dashboard.md`.
+- **Scope**: Provide a pre-configured Obsidian Shell Commands snippet that triggers `python3 -m scripts.lib.audit_hardening` on file save and opens `_Arcanum_Lite_Dashboard.md`.
 - **Verification**: `python3 scripts/sync_and_verify_docs.py`
 
 ## Issue E: `[Good First Issue] Add Cross-Platform Path Locking Regression Tests for Windows UNC Paths`
