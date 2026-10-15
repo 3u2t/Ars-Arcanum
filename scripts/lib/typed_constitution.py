@@ -10,11 +10,11 @@ Repository Target: `scripts/lib/typed_constitution.py`
 from __future__ import annotations
 
 import argparse
+import json
+import sys
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
-import json
 from pathlib import Path
-import sys
 from typing import Any
 
 try:
@@ -166,7 +166,7 @@ def load_yaml_constitution_file(path: Path) -> dict[str, Any]:
     raw = path.read_text(encoding="utf-8")
     wrapped = raw if raw.lstrip().startswith("---") else f"---\n{raw}\n---\n"
     parsed, _ = parse_frontmatter(wrapped)
-    return parsed
+    return dict(parsed) if isinstance(parsed, dict) else {}
 
 
 def main(argv: list[str] | None = None) -> int:

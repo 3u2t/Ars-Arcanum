@@ -284,13 +284,8 @@ def export_markdown_to_docx_hardened(
     try:
         from scripts.lib.docx_tracked_changes import export_markdown_to_docx
 
-        tmp_md = target_docx.with_suffix(".sanitized.tmp.md")
-        try:
-            tmp_md.write_text(safe_text, encoding="utf-8")
-            export_markdown_to_docx(tmp_md, target_docx, author=author)
-            wrote_via_delegate = target_docx.is_file()
-        finally:
-            tmp_md.unlink(missing_ok=True)
+        export_markdown_to_docx(safe_text, target_docx, author=author)
+        wrote_via_delegate = target_docx.is_file()
     except Exception:
         wrote_via_delegate = False
 

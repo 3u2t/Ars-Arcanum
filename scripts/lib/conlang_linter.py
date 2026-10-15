@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, dataclass
+import itertools
 import json
 from pathlib import Path
 import re
@@ -64,7 +65,7 @@ def import_polyglot_lexicon(source_path: Path) -> list[ConlangLexeme]:
     else:
         xml_bytes = resolved.read_bytes()
 
-    root = ET.fromstring(xml_bytes)  # noqa: S314  # nosec B314
+    root = ET.fromstring(xml_bytes)  # nosec B314
     lexicon_node = root.find("lexicon")
     word_nodes = lexicon_node.findall("word") if lexicon_node is not None else root.findall(".//word")
 
@@ -153,7 +154,7 @@ def validate_word_phonotactics(word: str, spec: PhonotacticSpec) -> list[Conlang
             )
 
     if not spec.allow_vowel_hiatus:
-        for prev_t, curr_t in zip(tokens, tokens[1:]):
+        for prev_t, curr_t in itertools.pairwise(tokens):
             if prev_t in vowel_set and curr_t in vowel_set and prev_t != curr_t:
                 violations.append(
                     ConlangViolation(

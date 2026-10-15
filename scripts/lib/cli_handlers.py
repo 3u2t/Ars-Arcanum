@@ -8,8 +8,8 @@ redirection for retired engines, and the canonical dispatch routing table.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 import sys
+from collections.abc import Callable
 
 
 def _handle_matter(dispatch_sub_fn: Callable[[str, list[str]], int], rest: list[str]) -> int:

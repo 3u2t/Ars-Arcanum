@@ -12,11 +12,11 @@ Repository Target: `scripts/lib/narrative_braid.py`
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
 import html
 import json
-from pathlib import Path
 import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 try:

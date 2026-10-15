@@ -12,11 +12,12 @@ Repository Target: `scripts/lib/timeline_solver.py`
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
+import itertools
 import json
 import math
-from pathlib import Path
 import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 try:
@@ -137,7 +138,7 @@ def audit_timeline_and_routes(
 
     anomalies: list[TimelineAnomaly] = []
     for char_name, char_events in by_character.items():
-        for prev_ev, curr_ev in zip(char_events, char_events[1:]):
+        for prev_ev, curr_ev in itertools.pairwise(char_events):
             prev_abs = calendar.to_absolute_day(prev_ev.year, prev_ev.month, prev_ev.day)
             curr_abs = calendar.to_absolute_day(curr_ev.year, curr_ev.month, curr_ev.day)
             elapsed = curr_abs - prev_abs

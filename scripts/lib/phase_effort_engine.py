@@ -17,12 +17,12 @@ Repository Target: `scripts/lib/phase_effort_engine.py`
 from __future__ import annotations
 
 import argparse
+import json
+import sys
 from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from enum import Enum
-import json
 from pathlib import Path
-import sys
 from typing import Any
 
 try:
@@ -190,9 +190,10 @@ def evaluate_session_effort(
     revision_words: int = 0,
     minutes_spent: float = 0.0,
     notes: str = "",
-    config: EffortMultiplierConfig = EffortMultiplierConfig(),
+    config: EffortMultiplierConfig | None = None,
 ) -> EvaluatedSession:
     """Deterministically compute effort points and manuscript progress for a writing session."""
+    effective_config = config or EffortMultiplierConfig()
     resolved_stage = ProjectStage(stage) if not isinstance(stage, ProjectStage) else stage
 
     for name, val in (
@@ -205,17 +206,21 @@ def evaluate_session_effort(
             raise ValueError(f"{name} must be non-negative (got {val})")
 
     outline_mult = (
-        config.on_phase_outlining_weight
+        effective_config.on_phase_outlining_weight
         if resolved_stage in DESIGNATED_OUTLINE_STAGES
-        else config.off_phase_outlining_weight
+        else effective_config.off_phase_outlining_weight
     )
     in_revision_stage = resolved_stage in DESIGNATED_REVISION_STAGES
-    revision_mult = config.on_phase_revision_weight if in_revision_stage else config.off_phase_revision_weight
+    revision_mult = (
+        effective_config.on_phase_revision_weight
+        if in_revision_stage
+        else effective_config.off_phase_revision_weight
+    )
 
     effort_points = round(
-        (first_draft_words * config.drafting_weight)
+        (first_draft_words * effective_config.drafting_weight)
         + (outlining_words * outline_mult)
-        + (worldbuilding_words * config.worldbuilding_weight)
+        + (worldbuilding_words * effective_config.worldbuilding_weight)
         + (revision_words * revision_mult),
         2,
     )
@@ -238,8 +243,8 @@ def evaluate_session_effort(
         total_manuscript_words_added=manuscript_words_added,
         total_raw_words_logged=raw_words_logged,
         effort_points=effort_points,
-        daily_target=config.daily_effort_goal,
-        goal_met=effort_points >= config.daily_effort_goal,
+        daily_target=effective_config.daily_effort_goal,
+        goal_met=effort_points >= effective_config.daily_effort_goal,
         premature_revision_blocked=premature_revision_blocked,
         minutes_spent=minutes_spent,
         words_per_hour=wph,
@@ -253,10 +258,10 @@ class PhaseEffortLedger:
     def __init__(
         self,
         workspace_root: Path,
-        config: EffortMultiplierConfig = EffortMultiplierConfig(),
+        config: EffortMultiplierConfig | None = None,
     ) -> None:
         self.workspace_root = workspace_root.resolve()
-        self.config = config
+        self.config = config or EffortMultiplierConfig()
         self.ledger_path = self.workspace_root / ".arcanum" / "sprint_log.jsonl"
 
     def append_session(self, session: EvaluatedSession) -> None:

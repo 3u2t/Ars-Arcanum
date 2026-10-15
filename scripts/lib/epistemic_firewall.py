@@ -12,10 +12,10 @@ Repository Target: `scripts/lib/epistemic_firewall.py`
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
 import json
-from pathlib import Path
 import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 try:

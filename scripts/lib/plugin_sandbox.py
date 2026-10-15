@@ -10,11 +10,11 @@ Repository Target: `scripts/lib/plugin_sandbox.py`
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict, dataclass
 import json
-from pathlib import Path
 import subprocess  # nosec B404
 import sys
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 try:
