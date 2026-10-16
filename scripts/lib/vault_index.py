@@ -23,6 +23,7 @@ import re
 import sys
 import tempfile
 import threading
+import time
 from collections import OrderedDict
 from collections.abc import Iterable, Iterator
 from dataclasses import asdict, dataclass, field
@@ -100,7 +101,14 @@ def atomic_write(target_path: Path, content: str | bytes, encoding: str = "utf-8
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
-        os.replace(str(tmp_path), str(target_path))
+        for attempt in range(5):
+            try:
+                os.replace(str(tmp_path), str(target_path))
+                break
+            except PermissionError:
+                if attempt == 4 or sys.platform != "win32":
+                    raise
+                time.sleep(0.02 * (2**attempt))
     except Exception:
         tmp_path.unlink(missing_ok=True)
         raise

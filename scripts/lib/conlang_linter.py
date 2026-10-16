@@ -16,8 +16,12 @@ from pathlib import Path
 import re
 import sys
 from typing import Any
-import xml.etree.ElementTree as ET  # nosec B405
 import zipfile
+
+try:
+    from lib.audit_hardening import parse_xml_safe_bytes, validate_safe_zip_archive
+except ImportError:
+    from audit_hardening import parse_xml_safe_bytes, validate_safe_zip_archive
 
 
 @dataclass(frozen=True)
@@ -57,6 +61,7 @@ def import_polyglot_lexicon(source_path: Path) -> list[ConlangLexeme]:
     """Import a PolyGlot `.pgd` ZIP archive or XML dictionary without external dependencies."""
     resolved = source_path.resolve()
     if zipfile.is_zipfile(resolved):
+        validate_safe_zip_archive(resolved)
         with zipfile.ZipFile(resolved, "r") as zf:
             xml_names = [n for n in zf.namelist() if n.endswith(".xml")]
             if not xml_names:
@@ -65,7 +70,7 @@ def import_polyglot_lexicon(source_path: Path) -> list[ConlangLexeme]:
     else:
         xml_bytes = resolved.read_bytes()
 
-    root = ET.fromstring(xml_bytes)  # nosec B314
+    root = parse_xml_safe_bytes(xml_bytes)
     lexicon_node = root.find("lexicon")
     word_nodes = lexicon_node.findall("word") if lexicon_node is not None else root.findall(".//word")
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess  # nosec B404
 import sys
 from dataclasses import asdict, dataclass
@@ -55,11 +56,15 @@ def run_plugin_sandboxed(
         raise FileNotFoundError(f"Invalid plugin script: {resolved_script}")
 
     input_json = json.dumps(payload, sort_keys=True)
-    sanitized_env = {
-        "PATH": "/usr/bin:/bin",
+    sanitized_env: dict[str, str] = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin") if sys.platform == "win32" else "/usr/bin:/bin",
         "PYTHONIOENCODING": "utf-8",
         "LC_ALL": "C.UTF-8",
     }
+    if sys.platform == "win32":
+        for k in ("SystemRoot", "WINDIR", "TEMP", "TMP"):
+            if k in os.environ:
+                sanitized_env[k] = os.environ[k]
 
     try:
         completed = subprocess.run(  # nosec B603

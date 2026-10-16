@@ -41,6 +41,7 @@ Usage:
   ars-arcanum <command> [arguments...]
 
 🛡️  Sovereign Revision, Portfolio & Word Processing:
+  studio [VAULT] [--port 4242] Zero-conf local visual web studio & continuity cockpit (alias: cockpit)
   compare <MS> [D_NEW] [D_OLD] Visual Redline changelog comparison between drafts (alias: diff, redline)
   revision-heatmap [MS]        Manuscript revision density & prose churn heatmap (alias: churn, heatmap)
   portfolio [DIR] [--html]     Multi-manuscript catalog dashboard & drafting velocity (alias: author-stats)

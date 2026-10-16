@@ -6,7 +6,9 @@ Provides crash-resilient transactional file writes and secure directory operatio
 from __future__ import annotations
 
 import os
+import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -56,7 +58,14 @@ def atomic_write(path: Path | str, data: str | bytes, encoding: str = "utf-8") -
             except OSError:
                 pass
 
-        os.replace(tmp_path, target)
+        for attempt in range(5):
+            try:
+                os.replace(tmp_path, target)
+                break
+            except PermissionError:
+                if attempt == 4 or sys.platform != "win32":
+                    raise
+                time.sleep(0.02 * (2**attempt))
 
         # On POSIX systems, fsync parent directory to ensure directory entry is flushed
         if hasattr(os, "O_DIRECTORY"):

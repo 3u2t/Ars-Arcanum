@@ -12,6 +12,7 @@ Repository Target: `scripts/lib/timeline_solver.py`
 from __future__ import annotations
 
 import argparse
+import heapq
 import itertools
 import json
 import math
@@ -91,6 +92,7 @@ class CharacterTimelineEvent:
     month: int
     day: int
     travel_mode: str = "camel_caravan"
+    is_flashback: bool = False
 
 
 @dataclass(frozen=True)
@@ -113,6 +115,51 @@ def compute_relativistic_proper_days(coordinate_days: float, velocity_fraction_c
     if not (0.0 <= velocity_fraction_c < 1.0):
         raise ValueError("velocity_fraction_c must be in [0.0, 1.0)")
     return round(coordinate_days * math.sqrt(1.0 - (velocity_fraction_c**2)), 4)
+
+
+def compute_shortest_travel_days(
+    routes: list[RouteEdge],
+    origin: str,
+    destination: str,
+    travel_mode: str = "camel_caravan",
+) -> tuple[float, float, list[str]] | None:
+    """Find minimum travel time (days) and total distance (km) between origin and destination via Dijkstra."""
+    if origin == destination:
+        return (0.0, 0.0, [origin])
+
+    base_speed = DEFAULT_MODE_SPEED_KMPD.get(travel_mode, 30.0)
+
+    # Build bidirectional graph
+    adj: dict[str, list[tuple[str, float, float]]] = {}
+    for r in routes:
+        terrain_mult = DEFAULT_TERRAIN_MULTIPLIER.get(r.terrain, 0.75)
+        speed = max(1.0, base_speed * terrain_mult)
+        days = r.distance_km / speed
+        adj.setdefault(r.origin, []).append((r.destination, days, r.distance_km))
+        adj.setdefault(r.destination, []).append((r.origin, days, r.distance_km))
+
+    if origin not in adj or destination not in adj:
+        return None
+
+    # Priority queue: (accumulated_days, current_node, total_km, path)
+    pq: list[tuple[float, str, float, list[str]]] = [(0.0, origin, 0.0, [origin])]
+    best_days: dict[str, float] = {origin: 0.0}
+
+    while pq:
+        curr_days, u, curr_km, path = heapq.heappop(pq)
+        if curr_days > best_days.get(u, float("inf")):
+            continue
+
+        if u == destination:
+            return (round(curr_days, 2), round(curr_km, 2), path)
+
+        for v, edge_days, edge_km in adj.get(u, []):
+            new_days = curr_days + edge_days
+            if new_days < best_days.get(v, float("inf")):
+                best_days[v] = new_days
+                heapq.heappush(pq, (new_days, v, curr_km + edge_km, [*path, v]))
+
+    return None
 
 
 def audit_timeline_and_routes(
@@ -144,6 +191,8 @@ def audit_timeline_and_routes(
             elapsed = curr_abs - prev_abs
 
             if elapsed < 0:
+                if curr_ev.is_flashback:
+                    continue
                 anomalies.append(
                     TimelineAnomaly(
                         rule_id="TIME-302",
@@ -164,13 +213,31 @@ def audit_timeline_and_routes(
                 continue
 
             if prev_ev.location != curr_ev.location:
-                edge = route_lookup.get((prev_ev.location, curr_ev.location))
-                if edge is not None:
-                    base_speed = DEFAULT_MODE_SPEED_KMPD.get(curr_ev.travel_mode, 30.0)
-                    terrain_mult = DEFAULT_TERRAIN_MULTIPLIER.get(edge.terrain, 0.75)
-                    effective_speed = max(1.0, base_speed * terrain_mult)
-                    min_days = round(edge.distance_km / effective_speed, 2)
+                shortest = compute_shortest_travel_days(
+                    routes,
+                    prev_ev.location,
+                    curr_ev.location,
+                    curr_ev.travel_mode,
+                )
+                if shortest is not None:
+                    min_days, total_km, path = shortest
                     if elapsed < math.ceil(min_days):
+                        edge = route_lookup.get((prev_ev.location, curr_ev.location))
+                        if edge is not None:
+                            msg = (
+                                f"TIME-301 Impossible Travel Speed: '{char_name}' travels "
+                                f"{edge.distance_km:.0f} km across '{edge.terrain}' from "
+                                f"'{prev_ev.location}' to '{curr_ev.location}' via "
+                                f"'{curr_ev.travel_mode}' in {elapsed} days (minimum required: "
+                                f"{min_days:.1f} days)."
+                            )
+                        else:
+                            msg = (
+                                f"TIME-301 Impossible Travel Speed: '{char_name}' travels "
+                                f"{total_km:.0f} km from '{prev_ev.location}' to '{curr_ev.location}' "
+                                f"via '{curr_ev.travel_mode}' ({' -> '.join(path)}) in {elapsed} days "
+                                f"(minimum required: {min_days:.1f} days)."
+                            )
                         anomalies.append(
                             TimelineAnomaly(
                                 rule_id="TIME-301",
@@ -181,13 +248,7 @@ def audit_timeline_and_routes(
                                 destination=curr_ev.location,
                                 elapsed_days=elapsed,
                                 required_days=min_days,
-                                message=(
-                                    f"TIME-301 Impossible Travel Speed: '{char_name}' travels "
-                                    f"{edge.distance_km:.0f} km across '{edge.terrain}' from "
-                                    f"'{prev_ev.location}' to '{curr_ev.location}' via "
-                                    f"'{curr_ev.travel_mode}' in {elapsed} days (minimum required: "
-                                    f"{min_days:.1f} days)."
-                                ),
+                                message=msg,
                             )
                         )
 
@@ -244,6 +305,12 @@ def audit_vault_timeline(vault_root: Path) -> dict[str, Any]:
         elif "year" in fm and "month" in fm and "day" in fm:
             char_name = str(fm.get("pov") or node.directives.get("pov") or "Protagonist")
             loc = str(fm.get("location") or node.directives.get("location") or "Unknown")
+            is_flashback = bool(
+                fm.get("flashback")
+                or fm.get("is_flashback")
+                or str(node.directives.get("flashback", "")).lower() in ("true", "1")
+                or str(node.directives.get("is_flashback", "")).lower() in ("true", "1")
+            )
             events.append(
                 CharacterTimelineEvent(
                     chapter_index=int(fm.get("chapter", idx_num)),
@@ -253,6 +320,7 @@ def audit_vault_timeline(vault_root: Path) -> dict[str, Any]:
                     month=int(fm["month"]),
                     day=int(fm["day"]),
                     travel_mode=str(fm.get("travel_mode", "camel_caravan")),
+                    is_flashback=is_flashback,
                 )
             )
 

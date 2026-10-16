@@ -190,6 +190,18 @@ def audit_vault_epistemic(vault_root: Path) -> EpistemicAuditReport:
     characters: list[CharacterKnowledgeBaseline] = []
     chapters: list[ChapterEpistemicEvent] = []
     myths: set[str] = set()
+    tracked_secrets: set[str] = set()
+
+    # Pre-pass: collect all tracked secret fact IDs across characters, reveals, and marked lore
+    for node in nodes:
+        fm = node.frontmatter
+        rel = node.relative_path
+        if fm.get("secret") is True or fm.get("restricted") is True or fm.get("type") in ("secret", "revelation"):
+            tracked_secrets.add(str(fm.get("fact_id") or Path(rel).stem))
+        for item in _as_str_tuple(fm.get("learns") or fm.get("reveals") or []):
+            tracked_secrets.add(item)
+        for item in _as_str_tuple(fm.get("references", [])):
+            tracked_secrets.add(item)
 
     for idx_num, node in enumerate(nodes, start=1):
         fm = node.frontmatter
@@ -207,7 +219,11 @@ def audit_vault_epistemic(vault_root: Path) -> EpistemicAuditReport:
             chap_idx = int(fm.get("chapter", idx_num))
             chap_title = str(fm.get("title") or Path(rel).stem)
             pov = str(fm.get("pov") or node.directives.get("pov") or "Omniscient")
-            refs = _as_str_tuple(fm.get("references", []))
+            refs = list(_as_str_tuple(fm.get("references", [])))
+            for wl in node.wikilinks:
+                target = (wl.target if hasattr(wl, "target") else str(wl).split("|")[0]).strip()
+                if target in tracked_secrets and target not in refs:
+                    refs.append(target)
             learned = _as_str_tuple(fm.get("learns") or fm.get("reveals") or [])
             asserted = _as_str_tuple(fm.get("asserts", []))
             chapters.append(
@@ -215,7 +231,7 @@ def audit_vault_epistemic(vault_root: Path) -> EpistemicAuditReport:
                     chapter_index=chap_idx,
                     chapter_title=chap_title,
                     pov_character=pov,
-                    referenced_facts=refs,
+                    referenced_facts=tuple(refs),
                     learned_facts=learned,
                     asserted_objective_facts=asserted,
                 )

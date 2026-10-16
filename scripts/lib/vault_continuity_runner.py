@@ -24,6 +24,7 @@ try:
     from lib.phase_effort_engine import PhaseEffortLedger
     from lib.resource_ledger import audit_vault_resources
     from lib.timeline_solver import audit_vault_timeline
+    from lib.typed_constitution import load_yaml_constitution_file, resolve_constitution_cascade
     from lib.vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath
 except ImportError:
     from epistemic_firewall import audit_vault_epistemic
@@ -31,6 +32,7 @@ except ImportError:
     from phase_effort_engine import PhaseEffortLedger
     from resource_ledger import audit_vault_resources
     from timeline_solver import audit_vault_timeline
+    from typed_constitution import load_yaml_constitution_file, resolve_constitution_cascade
     from vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath
 
 
@@ -57,6 +59,43 @@ def run_full_vault_continuity_suite(
     sessions = effort_ledger.load_sessions()
     total_effort_points = round(sum(s.effort_points for s in sessions), 2)
 
+    constitution_path = None
+    for cand in (
+        resolved_root / "constitution.yaml",
+        resolved_root / "constitution.json",
+        resolved_root / ".arcanum" / "constitution.yaml",
+    ):
+        if cand.is_file():
+            constitution_path = cand
+            break
+
+    const_dict = load_yaml_constitution_file(constitution_path) if constitution_path else None
+    constitution = resolve_constitution_cascade(global_dict=const_dict)
+
+    if "violations" in epistemic_report:
+        epistemic_report["violations"] = [
+            v for v in epistemic_report["violations"]
+            if constitution.is_rule_enabled(str(v.get("rule_id", "EPI-201")))
+        ]
+        epistemic_report["passed"] = len(epistemic_report["violations"]) == 0
+
+    if "anomalies" in timeline_report:
+        timeline_report["anomalies"] = [
+            a for a in timeline_report["anomalies"]
+            if constitution.is_rule_enabled(str(a.get("rule_id", "TIME-301")))
+        ]
+        timeline_report["passed"] = len(timeline_report["anomalies"]) == 0
+
+    if "violations" in ledger_report:
+        ledger_report["violations"] = [
+            lv for lv in ledger_report["violations"]
+            if constitution.is_rule_enabled(str(lv.get("rule_id", "LED-501")))
+        ]
+        ledger_report["passed"] = len(ledger_report["violations"]) == 0
+
+    if "drought_alerts" in braid_report and not constitution.is_rule_enabled("BRD-601"):
+        braid_report["drought_alerts"] = []
+
     all_passed = bool(
         epistemic_report["passed"]
         and timeline_report["passed"]
@@ -67,6 +106,7 @@ def run_full_vault_continuity_suite(
     consolidated: dict[str, Any] = {
         "vault_root": str(resolved_root),
         "passed": all_passed,
+        "constitution": constitution.to_dict(),
         "documents_indexed": len(nodes),
         "total_words": sum(n.metrics.total_words for n in nodes),
         "logged_sprint_sessions": len(sessions),

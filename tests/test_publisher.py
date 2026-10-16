@@ -19,9 +19,11 @@ from lib.publisher import (
     compile_docx,
     compile_pandoc_epub,
     compile_typst_pdf,
+    escape_typst_text,
     get_manuscript_metadata,
     main,
     publish_manuscript,
+    resolve_prose_for_publication,
 )
 
 
@@ -148,6 +150,14 @@ class TestPublisher(unittest.TestCase):
             rc = main([str(self.tmp_dir / "NonexistentPubMS")])
             self.assertEqual(rc, 1)
             self.assertIn("Error:", mock_err.getvalue())
+
+    def test_publication_sanitization_and_typst_escaping(self):
+        raw = "He paid $50 to [[The Guild|Merchant Guild]] {--cutting his coin--}{++with a gold coin++} for item #42."
+        cleaned = resolve_prose_for_publication(raw)
+        self.assertEqual(cleaned, "He paid $50 to Merchant Guild with a gold coin for item #42.")
+
+        typst_escaped = escape_typst_text(raw)
+        self.assertEqual(typst_escaped, r"He paid \$50 to Merchant Guild with a gold coin for item \#42.")
 
 
 if __name__ == "__main__":

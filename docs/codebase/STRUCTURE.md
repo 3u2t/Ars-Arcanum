@@ -1,19 +1,69 @@
 # Repository Directory & Module Structure (`docs/codebase/STRUCTURE.md`)
 
-- **`scripts/lib/` (64 Python Modules)**: Contains all zero-dependency core, manuscript, worldbuilding, and publishing engines, including the 12 Phase 1–4 modules (`vault_index.py`, `phase_effort_engine.py`, `diff_core.py`, `typed_constitution.py`, `docx_tracked_changes.py`, `plugin_sandbox.py`, `epistemic_firewall.py`, `timeline_solver.py`, `conlang_linter.py`, `resource_ledger.py`, `narrative_braid.py`, `vault_continuity_runner.py`).
-- **`src/arcanum/`**: Layered subpackage hierarchy (`core`, `manuscript`, `worldbible`, `publishing`, `ui`).
-- **`tests/`**: 58 stdlib `unittest` suites verifying every invariant, CLI command, and documentation contract.
-
-
-<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
-## Phase 1-4 Production CLI & Continuity Cross-Reference
-
-- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
-- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
-- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
-- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
-- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
-- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
-- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
-- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
-- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)
+```text
+7-Scriptorium/
+├── .github/workflows/                 # Continuous Integration Pipelines
+│   ├── ci.yml                         # Multi-linter, mypy, SAST, coverage, and wheel verification
+│   └── narrative-continuity-ci.yml    # Multi-Python version continuity matrix (3.10, 3.11, 3.12)
+├── configs/                           # Curated Presets and Configuration Files
+│   ├── idioms.json                    # Speculative idioms and linguistic presets
+│   ├── leechblock_arcanum_rules.json  # Distraction-free author firewall configurations
+│   └── plugin_catalog.json            # Curated catalog of tested Obsidian plugins
+├── docs/                              # Comprehensive Craft and Engineering Documentation
+│   ├── adr/                           # Architectural Decision Records (ADR-0001, etc.)
+│   ├── audit/                         # Security and refactor audit reports
+│   ├── codebase/                      # Cited technical deep-dive and onboarding guides
+│   │   ├── ARCHITECTURE.md            # Definitive, cited master architecture document
+│   │   ├── CONCERNS.md                # Architectural concerns and security remediations
+│   │   ├── CONVENTIONS.md             # Coding conventions, atomic writes, and locking
+│   │   ├── INTEGRATIONS.md            # Dual-Surface API, Obsidian plugin, Word, Typst
+│   │   ├── STACK.md                   # Runtime stack, standard library, and zero-pip guarantee
+│   │   ├── STRUCTURE.md               # Complete repository directory and module layout
+│   │   └── TESTING.md                 # Testing architecture, coverage gates, and commands
+│   └── guides/                        # Author manuals, backup tutorials, typography
+├── scripts/                           # Primary Runtime Engines & CLI Dispatch
+│   ├── arcanum                        # Auto-detecting Python wrapper for POSIX environments
+│   ├── ars-arcanum                    # Secondary symlink entry point for package managers
+│   ├── setup_arcanum.ps1              # Zero-conf Windows desktop shortcut and environment installer
+│   ├── sync_and_verify_docs.py        # Documentation cross-reference synchronizer
+│   └── lib/                           # 64 production Python modules (100% standard library)
+│       ├── cli.py                     # Primary argument parser and command router
+│       ├── cli_handlers.py            # Handler registry mapping commands to engines
+│       ├── diff_core.py               # Two-level SHA-256 paragraph diffing and safe draft copy
+│       ├── docx_tracked_changes.py    # XML DOM CriticMarkup <-> Word Tracked Changes sync
+│       ├── epistemic_firewall.py      # POV secret discovery and spoiler firewall (EPI-*)
+│       ├── fs_utils.py                # Atomic file replacement with retry backoff & path confinement
+│       ├── lockfile.py                # Cross-platform advisory file locking (fcntl / msvcrt)
+│       ├── narrative_braid.py         # POV distribution, drought detection, SVG visualizer (BRD-*)
+│       ├── phase_effort_engine.py     # Phase-aware effort points and writing velocity ledger
+│       ├── plugin_sandbox.py          # Python subprocess isolation for user plugins
+│       ├── publisher.py               # Typst PDF and Pandoc EPUB publication compiler
+│       ├── resource_ledger.py         # Hard magic and sci-fi resource conservation auditor (LED-*)
+│       ├── studio_server.py           # CLI compatibility shim for local visual web studio
+│       ├── timeline_solver.py         # Planetary calendars, Dijkstra route transit physics (TIME-*)
+│       ├── typed_constitution.py      # 3-tier policy cascade resolution and !RULE_ID negation
+│       ├── vault_continuity_runner.py # Unified continuity suite and _Arcanum_Diagnostics.md bridge
+│       └── vault_index.py             # Mtime-cached single Data Access Layer (DAL) for markdown
+├── src/arcanum/                       # Canonical Structured Python Package Hierarchy
+│   ├── core/                          # Transactional I/O, path confinement, locking, and DAL
+│   ├── manuscript/                    # Diffing, effort telemetry, narrative braid, sprint engines
+│   ├── worldbible/                    # Epistemic firewall, timeline physics, conlang, and ledger
+│   ├── publishing/                    # Tracked changes, Typst/Pandoc publishers, preflight
+│   ├── ui/                            # Air-gapped single-file HTML5 Visual Studio Cockpit
+│   │   └── studio_app.html            # Zero-CDN, strict CSP local web application
+│   └── server/                        # Sovereign local HTTP server daemon and REST handlers
+│       ├── daemon.py                  # ThreadingHTTPServer daemon bound to 127.0.0.1:4242
+│       └── handlers.py                # REST endpoints for continuity, portfolio, sprints, rules
+├── templates/                         # Sovereign Creative Vault Templates
+│   ├── demo-cosmos/                   # Eldoria sample fantasy cosmos for integration testing
+│   ├── manuscript/                    # Clean novel scaffold with act/chapter metadata structures
+│   └── world-bible/                   # Complete worldbuilding vault seed (.rootweave, fileClasses)
+│       └── .obsidian/plugins/ars-arcanum/ # Native TypeScript Obsidian companion plugin
+│           ├── manifest.json          # Obsidian plugin manifest
+│           ├── main.js                # Status bar continuity badge, ribbon, and command palette
+│           └── styles.css             # Theme-matched CSS styles
+├── tests/                             # 58 standard library unittest suites (540 passing tests)
+├── pyproject.toml                     # Project packaging, ruff configuration, coverage settings
+├── mypy.ini                           # Strict static typing rules and module exclusions
+└── AGENTS.md                          # Sovereign operating manifesto and safety contracts
+```

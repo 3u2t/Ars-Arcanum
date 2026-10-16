@@ -58,6 +58,7 @@ from timeline_solver import (
     compute_relativistic_proper_days,
 )
 from typed_constitution import resolve_constitution_cascade
+from vault_continuity_runner import run_full_vault_continuity_suite
 from vault_index import PathSecurityError, atomic_write
 
 
@@ -241,6 +242,28 @@ class TestSpeculativeWorldbuilderEngines(unittest.TestCase):
         self.assertFalse(audit["passed"])
         self.assertEqual(audit["anomalies"][0]["rule_id"], "TIME-301")
 
+        # Multi-hop Dijkstra route test: A -> B (240km) and B -> C (240km), A -> C requires 20 days
+        routes_multi = [
+            RouteEdge("Sunken Citadel", "Glass Oasis", 240.0, "sand_sea"),
+            RouteEdge("Glass Oasis", "Crystal Spire", 240.0, "sand_sea"),
+        ]
+        events_multi = [
+            CharacterTimelineEvent(1, "Kael", "Sunken Citadel", 1042, 1, 1, "camel_caravan"),
+            CharacterTimelineEvent(2, "Kael", "Crystal Spire", 1042, 1, 6, "camel_caravan"),  # 5 days for 480km!
+        ]
+        audit_multi = audit_timeline_and_routes(calendar=reliquary_cal, routes=routes_multi, events=events_multi)
+        self.assertFalse(audit_multi["passed"])
+        self.assertEqual(audit_multi["anomalies"][0]["rule_id"], "TIME-301")
+        self.assertIn("Sunken Citadel -> Glass Oasis -> Crystal Spire", audit_multi["anomalies"][0]["message"])
+
+        # Flashback test: Ch 3 is a flashback to 50 days earlier; must not flag TIME-302
+        events_flashback = [
+            CharacterTimelineEvent(1, "Lyra", "Glass Oasis", 1042, 1, 10, "camel_caravan"),
+            CharacterTimelineEvent(2, "Lyra", "Glass Oasis", 1042, 1, 1, "camel_caravan", is_flashback=True),
+        ]
+        audit_flash = audit_timeline_and_routes(calendar=reliquary_cal, routes=routes, events=events_flashback)
+        self.assertTrue(audit_flash["passed"])
+
         # Relativistic time dilation check (v = 0.8c -> factor 0.6)
         proper = compute_relativistic_proper_days(100.0, 0.8)
         self.assertAlmostEqual(proper, 60.0, places=2)
@@ -306,6 +329,32 @@ class TestSpeculativeWorldbuilderEngines(unittest.TestCase):
         analysis = analyze_narrative_braid(chapters, max_drought_words=25_000)
         self.assertEqual(len(analysis["drought_alerts"]), 1)
         self.assertEqual(analysis["drought_alerts"][0]["absent_words"], 29_000)
+
+    def test_vault_continuity_suite_with_constitution_negation(self) -> None:
+        # Create manuscript directory and chapter
+        manuscript_dir = self.root / "Manuscript" / "Book-01" / "Draft-01"
+        manuscript_dir.mkdir(parents=True, exist_ok=True)
+        chapter = manuscript_dir / "01_Chapter.md"
+        atomic_write(
+            chapter,
+            "---\ntitle: Desert Crossing\npov: Kael\nlocation: Oasis\ncalendar_day: 10\n---\n"
+            "Kael journeyed across the dunes.\n",
+        )
+
+        # Baseline suite run
+        res = run_full_vault_continuity_suite(self.root, write_obsidian_dashboard=True)
+        self.assertTrue(res["passed"])
+        dash_file = self.root / "_Arcanum_Diagnostics.md"
+        self.assertTrue(dash_file.exists())
+        self.assertIn("Ars Arcanum Continuity Compiler", dash_file.read_text(encoding="utf-8"))
+
+        # Now add a constitution that disables EPI-201 and TIME-301
+        const_file = self.root / "constitution.yaml"
+        atomic_write(const_file, "rules:\n  - '!EPI-201'\n  - '!TIME-301'\n  - '!LED-501'\n  - '!BRD-601'\n")
+        res_negated = run_full_vault_continuity_suite(self.root, write_obsidian_dashboard=True)
+        self.assertFalse(res_negated["constitution"]["active_rules"].__contains__("EPI-201"))
+        self.assertFalse(res_negated["constitution"]["active_rules"].__contains__("TIME-301"))
+        self.assertTrue(res_negated["passed"])
 
 
 if __name__ == "__main__":

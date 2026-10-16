@@ -17,7 +17,7 @@ from scripts.lib.audit_hardening import (
     validate_safe_zip_archive,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.1.0"
 
 __all__ = [
     "LITE_OBSIDIAN_PLUGINS",

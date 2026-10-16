@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'self' http://127.0.0.1:* http://localhost:*;">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ars Arcanum — Sovereign Fiction Craft Studio</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-elevated: #1a2234;
+      --surface-hover: #222e44;
+      --border: #233148;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.2);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #c084fc;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-elevated: #f1f5f9;
+      --surface-hover: #e2e8f0;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.15);
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --purple: #9333ea;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand .badge {
+      font-size: 0.75rem;
+      background: var(--surface-elevated);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0.15rem 0.6rem;
+      font-family: var(--font-mono);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    button, .btn {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+    button:hover, .btn:hover {
+      background: var(--surface-hover);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0b0f19;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background: #7dd3fc;
+      color: #0b0f19;
+    }
+    .btn-allow {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.4);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+    }
+    .btn-allow:hover {
+      background: var(--success);
+      color: #0b0f19;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 0.35rem;
+      padding: 0.5rem 1.75rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .tab-btn.active {
+      background: var(--surface-elevated);
+      color: var(--accent);
+      border-color: var(--border);
+      font-weight: 600;
+    }
+    main {
+      flex: 1;
+      padding: 1.75rem;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .progress-bar-bg {
+      background: var(--surface-elevated);
+      border-radius: 9999px;
+      height: 8px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .alert-card {
+      border-left: 4px solid var(--warning);
+      padding: 1rem;
+      background: var(--surface-elevated);
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .alert-card.danger { border-left-color: var(--danger); }
+    .alert-card.success { border-left-color: var(--success); }
+    .alert-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .alert-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .alert-body {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .timer-display {
+      font-size: 3rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      text-align: center;
+      margin: 1rem 0;
+    }
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface-elevated);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 100;
+      font-size: 0.9rem;
+    }
+    #toast.show { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span style="font-size:1.5rem;">📜</span>
+      <div>
+        <h1>Ars Arcanum Studio</h1>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Sovereign 100% Offline Authoring Studio</div>
+      </div>
+      <span class="badge" id="vault-status">Scanning Vault...</span>
+    </div>
+    <div class="header-actions">
+      <button onclick="refreshData()" title="Reload Diagnostics & Telemetry">🔄 Sync</button>
+      <button onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('catalog')">📚 Manuscripts & Lore</button>
+    <button class="tab-btn" onclick="switchTab('continuity')">🛡️ Continuity & Twist Assistant</button>
+    <button class="tab-btn" onclick="switchTab('sprint')">⚡ Sprint Cockpit</button>
+    <button class="tab-btn" onclick="switchTab('publishing')">📦 Publication Center</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: CATALOG -->
+    <section id="tab-catalog" class="tab-content active">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div>
+          <h2>Manuscript Catalog & Lore Dossiers</h2>
+          <p style="color:var(--text-muted); font-size:0.9rem;">Multi-volume series progress and lore link health.</p>
+        </div>
+      </div>
+      <div id="catalog-container" class="grid-2">
+        <div class="card"><p style="color:var(--text-muted);">Loading catalog...</p></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CONTINUITY -->
+    <section id="tab-continuity" class="tab-content">
+      <div style="margin-bottom:1.25rem;">
+        <h2>Continuity Invariants & Craft Assistant</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+          Deterministic verification for POV spoilers (<code>EPI-*</code>), travel routes (<code>TIME-*</code>),
+          magic resource conservation (<code>LED-*</code>), and character droughts (<code>BRD-*</code>).
+        </p>
+      </div>
+      <div id="continuity-summary" style="margin-bottom:1rem;"></div>
+      <div id="alerts-container">
+        <div class="card"><p style="color:var(--text-muted);">Running continuity suite...</p></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SPRINT -->
+    <section id="tab-sprint" class="tab-content">
+      <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+        <h2>Sprint & Drafting Velocity Cockpit</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom: 1.5rem;">
+          Focus without distraction. Phase-aware effort points are automatically credited upon completion.
+        </p>
+
+        <div class="card" style="padding: 2rem;">
+          <div style="display:flex; justify-content:center; gap:1rem; margin-bottom:1rem;">
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Duration (Mins)</label>
+              <input type="number" id="sprint-duration" value="25" min="5" max="180" style="background:var(--surface-elevated); border:1px solid var(--border); color:var(--text); padding:0.4rem; border-radius:4px; width:90px; text-align:center;">
+            </div>
+            <div>
+              <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">Word Target</label>
+              <input type="number" id="sprint-target" value="500" min="50" step="50" style="background:var(--surface-elevated); border:1px solid var(--border); color:var(--text); padding:0.4rem; border-radius:4px; width:110px; text-align:center;">
+            </div>
+          </div>
+
+          <div class="timer-display" id="timer-display">25:00</div>
+
+          <div style="display:flex; justify-content:center; gap:0.75rem;">
+            <button class="btn btn-primary" id="btn-sprint-toggle" onclick="toggleSprint()">⚡ Start Sprint</button>
+            <button class="btn" onclick="resetSprint()">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: PUBLISHING -->
+    <section id="tab-publishing" class="tab-content">
+      <div style="margin-bottom:1.25rem;">
+        <h2>Publication & Export Center</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+          Compile clean, production-ready editions with automatic CriticMarkup resolution and Typst text escaping.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📖 Print-Ready PDF (Typst)</div>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Typesets mathematical and literary book layout in sub-second speed with Linux Libertine typography.</p>
+          <button class="btn" onclick="triggerExport('pdf')">🖨️ Compile Typst PDF</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📱 Reflowable EPUB3 (Pandoc)</div>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Produces clean EPUB with embedded chapter navigation, metadata rights, and stripped internal wikilinks.</p>
+          <button class="btn" onclick="triggerExport('epub')">📱 Compile EPUB3</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📝 Editor DOCX (William Shunn)</div>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Standard submission document with preserved Word Tracked Changes and reviewer margin comments.</p>
+          <button class="btn" onclick="triggerExport('docx')">📄 Compile Submission DOCX</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    let activeSprintInterval = null;
+    let sprintRemainingSec = 25 * 60;
+    let isSprintRunning = false;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.className = 'show';
+      setTimeout(() => { t.className = ''; }, 3500);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+    }
+
+    // Web Audio synthesizer chime (Zero external MP3 dependencies)
+    function playChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.8);
+      } catch(e) {}
+    }
+
+    function toggleSprint() {
+      const btn = document.getElementById('btn-sprint-toggle');
+      if (!isSprintRunning) {
+        const mins = parseInt(document.getElementById('sprint-duration').value, 10) || 25;
+        sprintRemainingSec = mins * 60;
+        isSprintRunning = true;
+        btn.innerText = '⏸ Pause Sprint';
+        btn.className = 'btn btn-allow';
+        fetch('/api/sprint/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ minutes: mins, target: parseInt(document.getElementById('sprint-target').value, 10) || 500 })
+        }).catch(() => {});
+        activeSprintInterval = setInterval(updateSprintTimer, 1000);
+        showToast(`⚡ Sprint started: ${mins} minutes`);
+      } else {
+        clearInterval(activeSprintInterval);
+        isSprintRunning = false;
+        btn.innerText = '⚡ Resume Sprint';
+        btn.className = 'btn btn-primary';
+      }
+    }
+
+    function updateSprintTimer() {
+      if (sprintRemainingSec <= 0) {
+        clearInterval(activeSprintInterval);
+        isSprintRunning = false;
+        document.getElementById('btn-sprint-toggle').innerText = '⚡ Start Sprint';
+        document.getElementById('btn-sprint-toggle').className = 'btn btn-primary';
+        playChime();
+        showToast('🎉 Sprint Complete! Effort points logged.');
+        fetch('/api/sprint/stop', { method: 'POST' }).catch(() => {});
+        return;
+      }
+      sprintRemainingSec--;
+      const m = Math.floor(sprintRemainingSec / 60);
+      const s = sprintRemainingSec % 60;
+      document.getElementById('timer-display').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function resetSprint() {
+      clearInterval(activeSprintInterval);
+      isSprintRunning = false;
+      const mins = parseInt(document.getElementById('sprint-duration').value, 10) || 25;
+      sprintRemainingSec = mins * 60;
+      document.getElementById('timer-display').innerText = `${String(mins).padStart(2, '0')}:00`;
+      document.getElementById('btn-sprint-toggle').innerText = '⚡ Start Sprint';
+      document.getElementById('btn-sprint-toggle').className = 'btn btn-primary';
+    }
+
+    function allowRule(ruleId) {
+      fetch('/api/constitution/allow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rule_id: ruleId })
+      })
+      .then(r => r.json())
+      .then(data => {
+        showToast(`✨ Intended twist allowed: ${ruleId} suppressed.`);
+        refreshData();
+      })
+      .catch(err => showToast(`Error: ${err}`));
+    }
+
+    function triggerExport(format) {
+      showToast(`📦 Triggering ${format.toUpperCase()} export...`);
+      fetch('/api/action/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ format: format })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success' || data.status === 'inspected') {
+          showToast(`✓ Export complete: ${format.toUpperCase()}`);
+        } else {
+          showToast(`Export issue: ${data.reason || 'Check logs'}`);
+        }
+      })
+      .catch(err => showToast(`Export error: ${err}`));
+    }
+
+    function refreshData() {
+      fetch('/api/status')
+        .then(r => r.json())
+        .then(status => {
+          document.getElementById('vault-status').innerText = `Vault: ${status.vault}`;
+        })
+        .catch(() => {
+          document.getElementById('vault-status').innerText = 'Local Daemon Offline';
+        });
+
+      fetch('/api/portfolio')
+        .then(r => r.json())
+        .then(catalog => {
+          renderCatalog(catalog);
+        })
+        .catch(() => {});
+
+      fetch('/api/diagnostics')
+        .then(r => r.json())
+        .then(diag => {
+          renderDiagnostics(diag);
+        })
+        .catch(() => {});
+    }
+
+    function renderCatalog(catalog) {
+      const container = document.getElementById('catalog-container');
+      const projects = catalog.projects || [];
+      if (projects.length === 0) {
+        container.innerHTML = '<div class="card"><p style="color:var(--text-muted);">No manuscript projects discovered yet in vault.</p></div>';
+        return;
+      }
+      container.innerHTML = projects.map(p => `
+        <div class="card">
+          <div class="card-title">
+            <span>📖 ${p.title}</span>
+            <span class="badge">${p.stage}</span>
+          </div>
+          <div class="stat-row">
+            <span>By ${p.author}</span>
+            <span>${(p.word_count || 0).toLocaleString()} / ${(p.target_words || 80000).toLocaleString()} words</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: ${Math.min(100, p.progress_pct || 0)}%;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDiagnostics(diag) {
+      const summary = document.getElementById('continuity-summary');
+      const alerts = document.getElementById('alerts-container');
+
+      const isPass = diag.passed;
+      summary.innerHTML = `
+        <div class="alert-card ${isPass ? 'success' : 'danger'}" style="margin-bottom:1.5rem;">
+          <div class="alert-header">
+            <span class="alert-title">${isPass ? '✓ All Continuity Checks Passed' : '⚠️ Action Recommended in Vault'}</span>
+            <span class="badge">${(diag.cumulative_effort_points || 0).toFixed(1)} Effort Points</span>
+          </div>
+          <div class="alert-body">
+            Indexed ${diag.documents_indexed || 0} documents (${(diag.total_words || 0).toLocaleString()} words).
+          </div>
+        </div>
+      `;
+
+      const allItems = [];
+      (diag.epistemic?.violations || []).forEach(v => {
+        allItems.push({
+          rule: v.rule_id,
+          type: 'danger',
+          category: 'POV / Spoiler Breach',
+          message: v.message,
+          rule_id: v.rule_id
+        });
+      });
+      (diag.timeline?.anomalies || []).forEach(a => {
+        allItems.push({
+          rule: a.rule_id,
+          type: 'danger',
+          category: 'Timeline / Travel Anomaly',
+          message: a.message,
+          rule_id: a.rule_id
+        });
+      });
+      (diag.resource_ledger?.violations || []).forEach(lv => {
+        allItems.push({
+          rule: lv.rule_id,
+          type: 'danger',
+          category: 'Magic Resource Deficit',
+          message: lv.message,
+          rule_id: lv.rule_id
+        });
+      });
+      (diag.narrative_braid?.drought_alerts || []).forEach(da => {
+        allItems.push({
+          rule: 'BRD-601',
+          type: 'warning',
+          category: 'POV Character Drought',
+          message: `Character '${da.character}' absent for ${da.absent_words.toLocaleString()} words (Ch ${da.from_chapter} -> ${da.to_chapter}).`,
+          rule_id: 'BRD-601'
+        });
+      });
+
+      if (allItems.length === 0) {
+        alerts.innerHTML = '<div class="card"><p style="color:var(--success);">✨ Zero continuity errors or unresolved reveal leaks detected.</p></div>';
+        return;
+      }
+
+      alerts.innerHTML = allItems.map(item => `
+        <div class="alert-card ${item.type}">
+          <div class="alert-header">
+            <span class="alert-title">
+              <span>${item.type === 'danger' ? '🚫' : '⚠️'}</span>
+              <span>${item.category} [${item.rule}]</span>
+            </span>
+            <button class="btn btn-allow" onclick="allowRule('${item.rule_id}')">⚡ Allow / Intended Twist</button>
+          </div>
+          <div class="alert-body">${item.message}</div>
+        </div>
+      `).join('');
+    }
+
+    // Initial load
+    refreshData();
+    setInterval(refreshData, 30000);
+  </script>
+</body>
+</html>

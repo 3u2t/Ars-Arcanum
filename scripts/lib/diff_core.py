@@ -313,10 +313,12 @@ def promote_draft_hardlinked(
                 continue
             src_file = Path(dirpath) / fname
             dst_file = dest_subdir / fname
-            try:
-                os.link(src_file, dst_file)
-            except OSError:
-                shutil.copy2(src_file, dst_file)
+            shutil.copy2(src_file, dst_file)
+            if lock_parent:
+                try:
+                    os.chmod(src_file, 0o444)
+                except OSError:
+                    pass
             linked_files += 1
 
     stamp = datetime.now(timezone.utc).isoformat()
@@ -326,6 +328,7 @@ def promote_draft_hardlinked(
         "milestone": milestone_tag,
         "created_at": stamp,
         "hardlinked_files": linked_files,
+        "copied_files": linked_files,
     }
     atomic_write(target_dir / ".draft_lineage.json", json.dumps(lineage_meta, indent=2))
 

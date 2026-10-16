@@ -117,3 +117,6 @@ htmlcov/
 # Python cache in scripts/ (not covered by root __pycache__ rule)
 scripts/__pycache__/
 
+# Agent scratch & teamwork logs
+.agents/
+

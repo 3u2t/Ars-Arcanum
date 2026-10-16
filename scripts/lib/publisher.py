@@ -14,11 +14,45 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+_CRITIC_RE = re.compile(
+    r"(\{\+\+(?P<ins>.*?)\+\+\}"
+    r"|\{--(?P<del>.*?)--\}"
+    r"|\{~~(?P<sub_old>.*?)~>(?P<sub_new>.*?)~~\}"
+    r"|\{==(?P<hi>.*?)==\}"
+    r"|\{>>(?P<comment>.*?)<<\})",
+    re.DOTALL,
+)
+
+_WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
+
+
+def resolve_prose_for_publication(text: str) -> str:
+    """Resolve CriticMarkup to accepted state and strip internal Obsidian wikilinks for export."""
+    def _critic_sub(match: re.Match[str]) -> str:
+        if match.group("ins") is not None:
+            return match.group("ins")
+        if match.group("sub_new") is not None:
+            return match.group("sub_new")
+        if match.group("hi") is not None:
+            return match.group("hi")
+        return ""
+
+    resolved = _CRITIC_RE.sub(_critic_sub, text)
+    return _WIKILINK_RE.sub(lambda m: m.group(2) if m.group(2) is not None else m.group(1), resolved)
+
+
+def escape_typst_text(text: str) -> str:
+    """Escapes Typst special characters (#, $, @) in prose so they don't break compilation."""
+    clean = resolve_prose_for_publication(text)
+    return re.sub(r"([#$@])", r"\\\1", clean)
+
 
 try:
     from lib._bootstrap import atomic_write, count_prose_words, sanitize_identifier
@@ -140,7 +174,7 @@ def compile_docx(
     full_markdown_parts = []
 
     for ch in chapters:
-        full_markdown_parts.append(f"# {ch['title']}\n\n{ch['body']}\n\n")
+        full_markdown_parts.append(f"# {ch['title']}\n\n{resolve_prose_for_publication(ch['body'])}\n\n")
 
     full_md = "\n".join(full_markdown_parts)
     author = str(meta.get("author", "Author"))
@@ -195,7 +229,7 @@ def compile_typst_pdf(
             if p_clean in ("* * *", "***", "---"):
                 typst_lines.append("#align(center)[* * *]")
             elif not p_clean.startswith("#"):
-                typst_lines.append(p_clean)
+                typst_lines.append(escape_typst_text(p_clean))
             typst_lines.append("")
         typst_lines.append("#pagebreak()")
         typst_lines.append("")
@@ -252,7 +286,7 @@ def compile_pandoc_epub(
 
     for ch in chapters:
         md_lines.append(f"# {ch['title']}\n\n")
-        md_lines.append(ch["body"])
+        md_lines.append(resolve_prose_for_publication(ch["body"]))
         md_lines.append("\n\n---\n\n")
 
     full_md = "\n".join(md_lines)

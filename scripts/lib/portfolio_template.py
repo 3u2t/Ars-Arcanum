@@ -135,6 +135,8 @@ def render_portfolio_html(report: dict[str, Any], output_path: Path | str) -> Pa
             """
 
         series_tag = f'<span class="badge badge-series">📚 {html.escape(p_series)}</span>' if p_series else ""
+        words_cmd = html.escape(f'arcanum words "{p_path}"', quote=True)
+        preflight_cmd = html.escape(f'arcanum preflight "{p_path}"', quote=True)
 
         card = f"""
         <div class="project-card" data-title="{html.escape(p_title.lower())}" data-author="{html.escape(p_author.lower())}" data-stage="{html.escape(p_stage.lower())}" data-series="{html.escape(p_series.lower())}" data-progress="{p_progress}" data-words="{p_words}" data-target="{p_target}">
@@ -168,9 +170,9 @@ def render_portfolio_html(report: dict[str, Any], output_path: Path | str) -> Pa
                 {export_badges}
             </div>
             <div class="quick-actions">
-                <button class="action-btn" onclick="copyCli('arcanum sprint start --target 1000 --minutes 45')">⚡ Sprint</button>
-                <button class="action-btn" onclick="copyCli('arcanum words \\'{html.escape(p_path)}\\'')">📊 Telemetry</button>
-                <button class="action-btn" onclick="copyCli('arcanum preflight \\'{html.escape(p_path)}\\'')">🛡️ Preflight</button>
+                <button class="action-btn" data-cli="arcanum sprint start --target 1000 --minutes 45">⚡ Sprint</button>
+                <button class="action-btn" data-cli="{words_cmd}">📊 Telemetry</button>
+                <button class="action-btn" data-cli="{preflight_cmd}">🛡️ Preflight</button>
             </div>
           </div>
         </div>
@@ -197,6 +199,9 @@ def render_portfolio_html(report: dict[str, Any], output_path: Path | str) -> Pa
                 """)
 
         health_color = "#10b981" if u_health >= 95 else ("#f59e0b" if u_health >= 80 else "#ef4444")
+
+        codex_cmd = html.escape(f'arcanum codex "{u_path}" --html', quote=True)
+        doctor_cmd = html.escape(f'arcanum doctor "{u_path}"', quote=True)
 
         card = f"""
         <div class="project-card universe-card" data-title="{html.escape(u_name.lower())}" data-stage="universe">
@@ -225,8 +230,8 @@ def render_portfolio_html(report: dict[str, Any], output_path: Path | str) -> Pa
           <div class="card-footer">
             <span class="badge" style="background:#0f172a; color:#94a3b8;">Broken Links: {u_broken}</span>
             <div class="quick-actions">
-                <button class="action-btn" onclick="copyCli('arcanum codex \\'{html.escape(u_path)}\\' --html')">📖 Static Codex</button>
-                <button class="action-btn" onclick="copyCli('arcanum doctor \\'{html.escape(u_path)}\\'')">🩺 Lore Audit</button>
+                <button class="action-btn" data-cli="{codex_cmd}">📖 Static Codex</button>
+                <button class="action-btn" data-cli="{doctor_cmd}">🩺 Lore Audit</button>
             </div>
           </div>
         </div>
@@ -733,6 +738,16 @@ def render_portfolio_html(report: dict[str, Any], output_path: Path | str) -> Pa
     toast.className = 'show';
     setTimeout(() => {{ toast.className = toast.className.replace('show', ''); }}, 2500);
   }}
+
+  document.addEventListener('click', function(e) {{
+    const btn = e.target && e.target.closest ? e.target.closest('[data-cli]') : null;
+    if (btn) {{
+      const cmd = btn.getAttribute('data-cli');
+      if (cmd) {{
+        copyCli(cmd);
+      }}
+    }}
+  }});
 </script>
 <script>
 {theme_js}

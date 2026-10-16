@@ -159,6 +159,12 @@ $ArcanumProgramsDir = Join-Path $StartMenuPath "Ars Arcanum"
 
 $Shortcuts = @(
     @{
+        Name = "Ars Arcanum Visual Studio Cockpit"
+        Script = "scripts/lib/cli.py"
+        Args = "studio --open"
+        Desc = "Unified Sovereign Author Studio, Continuity Cockpit & Sprint Engine"
+    },
+    @{
         Name = "Ars Arcanum Portfolio Studio"
         Script = "scripts/lib/cli.py"
         Args = "portfolio --html dist/portfolio_studio.html --open"

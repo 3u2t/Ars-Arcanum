@@ -14,6 +14,7 @@ CROSS_REF_FOOTER = """
 ## Phase 1–4 Production CLI & Continuity Cross-Reference
 
 - **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
+- **Visual Studio Cockpit**: `python scripts/arcanum studio [VAULT]` (`src/arcanum/server/daemon.py`)
 - **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
 - **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
 - **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
@@ -22,6 +23,7 @@ CROSS_REF_FOOTER = """
 - **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
 - **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
 - **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)
+- **Multi-Format Publication & Prose Sanitizer**: `python scripts/arcanum publish [MANUSCRIPT]` (`scripts/lib/publisher.py`)
 """
 
 

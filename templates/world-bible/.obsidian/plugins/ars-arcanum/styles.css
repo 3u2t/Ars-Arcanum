@@ -1,0 +1,30 @@
+/* Ars Arcanum Companion Plugin Styles */
+
+.ars-arcanum-status-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-monospace, monospace);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.ars-arcanum-status-bar:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-accent);
+}
+
+.ars-arcanum-pass {
+  color: var(--text-success, #10b981);
+}
+
+.ars-arcanum-warn {
+  color: var(--text-warning, #f59e0b);
+}
+
+.ars-arcanum-error {
+  color: var(--text-error, #ef4444);
+}

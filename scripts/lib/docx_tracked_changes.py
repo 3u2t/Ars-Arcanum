@@ -19,8 +19,10 @@ import xml.etree.ElementTree as ET  # nosec B405
 import zipfile
 
 try:
+    from lib.audit_hardening import parse_xml_safe_bytes, validate_safe_zip_archive
     from lib.vault_index import PathSecurityError, atomic_write, is_safe_subpath
 except ImportError:
+    from audit_hardening import parse_xml_safe_bytes, validate_safe_zip_archive
     from vault_index import PathSecurityError, atomic_write, is_safe_subpath
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -215,16 +217,17 @@ def pull_docx_to_markdown(docx_path: Path, *, vault_root: Path | None = None) ->
         raise PathSecurityError(f"Input DOCX path escapes vault root: {resolved_in}")
 
     comments_map: dict[str, str] = {}
+    validate_safe_zip_archive(resolved_in)
     with zipfile.ZipFile(resolved_in, "r") as zf:
         if "word/comments.xml" in zf.namelist():
-            c_root = ET.fromstring(zf.read("word/comments.xml"))  # nosec B314
+            c_root = parse_xml_safe_bytes(zf.read("word/comments.xml"))
             for c_el in c_root.findall(_w("comment")):
                 cid = c_el.get(_w("id"), "")
                 c_author = c_el.get(_w("author"), "Editor")
                 c_texts = [t.text or "" for t in c_el.iter(_w("t"))]
                 comments_map[cid] = f"{c_author}: {''.join(c_texts).strip()}"
 
-        doc_root = ET.fromstring(zf.read("word/document.xml"))  # nosec B314
+        doc_root = parse_xml_safe_bytes(zf.read("word/document.xml"))
 
     body_el = doc_root.find(_w("body"))
     if body_el is None:

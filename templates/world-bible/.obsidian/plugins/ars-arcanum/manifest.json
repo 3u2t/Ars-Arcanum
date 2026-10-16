@@ -1,0 +1,10 @@
+{
+  "id": "ars-arcanum",
+  "name": "Ars Arcanum Studio Bridge",
+  "version": "0.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Live sovereign continuity checks, sprint cockpit, and dual-surface studio bridge for speculative fiction writers.",
+  "author": "Aryan Singh Nagar",
+  "authorUrl": "https://github.com/aryansinghnagar/Ars-Arcanum",
+  "isDesktopOnly": true
+}

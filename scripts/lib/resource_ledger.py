@@ -159,30 +159,52 @@ def audit_vault_resources(vault_root: Path) -> dict[str, Any]:
         entity = str(fm.get("entity") or fm.get("pov") or node.directives.get("pov") or Path(rel).stem)
 
         if isinstance(fm.get("resource_pools"), dict):
-            for res_name, init_val in fm["resource_pools"].items():
-                if isinstance(init_val, (int, float)):
+            for key, val in fm["resource_pools"].items():
+                if isinstance(val, (int, float)):
                     pools.append(
                         ResourcePoolSpec(
                             entity_name=entity,
-                            resource_name=str(res_name),
-                            initial_value=float(init_val),
+                            resource_name=str(key),
+                            initial_value=float(val),
                         )
                     )
+                elif isinstance(val, dict):
+                    for sub_res, sub_val in val.items():
+                        if isinstance(sub_val, (int, float)):
+                            pools.append(
+                                ResourcePoolSpec(
+                                    entity_name=str(key),
+                                    resource_name=str(sub_res),
+                                    initial_value=float(sub_val),
+                                )
+                            )
 
         if isinstance(fm.get("state_delta"), dict):
             chap_idx = int(fm.get("chapter", idx_num))
             chap_title = str(fm.get("title") or Path(rel).stem)
-            for res_name, delta_val in fm["state_delta"].items():
+            for key, delta_val in fm["state_delta"].items():
                 if isinstance(delta_val, (int, float)):
                     deltas.append(
                         ChapterResourceDelta(
                             chapter_index=chap_idx,
                             chapter_title=chap_title,
                             entity_name=entity,
-                            resource_name=str(res_name),
+                            resource_name=str(key),
                             delta=float(delta_val),
                         )
                     )
+                elif isinstance(delta_val, dict):
+                    for sub_res, sub_delta in delta_val.items():
+                        if isinstance(sub_delta, (int, float)):
+                            deltas.append(
+                                ChapterResourceDelta(
+                                    chapter_index=chap_idx,
+                                    chapter_title=chap_title,
+                                    entity_name=str(key),
+                                    resource_name=str(sub_res),
+                                    delta=float(sub_delta),
+                                )
+                            )
 
     return audit_resource_conservation(pools=pools, deltas=deltas)
 
