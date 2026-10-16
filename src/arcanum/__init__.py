@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from scripts.lib.audit_hardening import (
+from src.arcanum.core.hardening import (
     LITE_OBSIDIAN_PLUGINS,
     HardenedArchiveLimits,
     LiteCheckReport,

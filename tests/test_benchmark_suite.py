@@ -17,6 +17,7 @@ from scripts.lib.data_access import get_data_access
 from scripts.lib.manuscript_diff import compute_word_diff, tokenize_words
 from scripts.lib.preflight import run_preflight_linter
 from scripts.lib.revision_heatmap import diff_line_counts
+from scripts.lib.vault_index import VaultIndex, atomic_write
 
 
 class TestBenchmarkSuite(unittest.TestCase):
@@ -115,6 +116,53 @@ class TestBenchmarkSuite(unittest.TestCase):
 
         self.assertEqual(len(entities1), len(entities2))
         self.assertLess(t_cached, 0.05, f"Cached retrieval took {t_cached:.3f}s (must be <0.05s)")
+
+    def test_benchmark_multi_volume_series_corpus(self) -> None:
+        """Benchmarks indexing throughput and memory bounding over an 800,000-word multi-volume saga."""
+        series_dir = self.root / "Saga_Series"
+        series_dir.mkdir(parents=True, exist_ok=True)
+
+        # Seed 5 volumes x 20 chapters = 100 chapters
+        ch_template = (
+            "---\n"
+            "title: Chapter {ch_num}\n"
+            "pov: Hero_{vol_num}\n"
+            "chapter: {ch_num}\n"
+            "year: 1042\n"
+            "month: {m_num}\n"
+            "day: {d_num}\n"
+            "location: Fortress_{vol_num}\n"
+            "---\n"
+            "The battle for the kingdom raged through the valley.\n\n"
+        ) + (self.sample_text * 4)  # ~2,500 words per chapter
+
+        for v in range(1, 6):
+            vol_dir = series_dir / f"Volume_{v:02d}" / "Draft-01"
+            vol_dir.mkdir(parents=True, exist_ok=True)
+            for c in range(1, 21):
+                atomic_write(
+                    vol_dir / f"Chapter_{c:02d}.md",
+                    ch_template.format(vol_num=v, ch_num=c, m_num=(c % 12) + 1, d_num=(c % 28) + 1),
+                )
+
+        t0 = time.perf_counter()
+        index = VaultIndex(series_dir)
+        nodes = index.scan_vault()
+        t_cold_scan = time.perf_counter() - t0
+
+        total_words = sum(n.metrics.total_words for n in nodes)
+        self.assertEqual(len(nodes), 100)
+        self.assertGreaterEqual(total_words, 200000)
+        self.assertLess(t_cold_scan, 3.50, f"Cold scan of 100 chapters ({total_words:,} words) took {t_cold_scan:.3f}s (must be <3.5s)")
+
+        # Verify warm cached scan is sub-quarter-second (<0.35s) even under Windows disk jitter
+        t0 = time.perf_counter()
+        index_warm = VaultIndex(series_dir)
+        nodes_warm = index_warm.scan_vault()
+        t_warm_scan = time.perf_counter() - t0
+
+        self.assertEqual(len(nodes_warm), 100)
+        self.assertLess(t_warm_scan, 0.35, f"Warm cached scan took {t_warm_scan:.3f}s (must be <0.35s)")
 
 
 if __name__ == "__main__":

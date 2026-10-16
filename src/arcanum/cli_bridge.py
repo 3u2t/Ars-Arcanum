@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from scripts.lib.audit_hardening import build_lite_parser, main_lite
+from src.arcanum.core.hardening import build_lite_parser, main_lite
 
 __all__ = ["build_lite_parser", "main_lite"]
 

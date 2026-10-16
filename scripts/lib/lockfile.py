@@ -71,8 +71,8 @@ class ArcanumLock(AbstractContextManager):
                 self._fd = os.open(str(self.lock_path), os.O_RDWR | os.O_CREAT, 0o600)
 
                 if HAS_FCNTL:
-                    flags = (fcntl.LOCK_EX if self.exclusive else fcntl.LOCK_SH) | fcntl.LOCK_NB
-                    fcntl.flock(self._fd, flags)
+                    flags = (fcntl.LOCK_EX if self.exclusive else fcntl.LOCK_SH) | fcntl.LOCK_NB  # type: ignore[attr-defined]
+                    fcntl.flock(self._fd, flags)  # type: ignore[attr-defined]
                     self._is_locked = True
                 elif HAS_MSVCRT:
                     try:
@@ -123,7 +123,7 @@ class ArcanumLock(AbstractContextManager):
         if self._fd is not None and self._is_locked:
             try:
                 if HAS_FCNTL:
-                    fcntl.flock(self._fd, fcntl.LOCK_UN)
+                    fcntl.flock(self._fd, fcntl.LOCK_UN)  # type: ignore[attr-defined]
                 elif HAS_MSVCRT:
                     try:
                         os.lseek(self._fd, 0, os.SEEK_SET)

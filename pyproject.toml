@@ -48,6 +48,7 @@ ignore = [
 "scripts/lib/docx_tracked_changes.py" = ["S314", "I001"]
 "scripts/lib/restore.py" = ["C901", "SIM102", "SIM103", "RET505", "I001"]
 "scripts/lib/audit_hardening.py" = ["S314", "C901", "SIM102", "RET504", "RET505", "I001"]
+"src/arcanum/core/hardening.py" = ["S314", "C901", "SIM102", "RET504", "RET505", "I001"]
 "scripts/apply_arcanum_upgrade.py" = ["I001"]
 "scripts/sync_and_verify_docs.py" = ["I001"]
 "scripts/arcanum-lite" = ["I001", "E402"]

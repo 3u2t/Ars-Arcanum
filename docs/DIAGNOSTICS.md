@@ -5,7 +5,7 @@
 
 ## 1. Overview & Theoretical Rationale
 
-The **Ars Arcanum Diagnostics Engine** (`scripts/lib/diagnostics.py`) is an offline host capability scanner, environment validator, filesystem integrity prober, and toolchain verifier engineered to guarantee deterministic execution across diverse operating systems (Linux, macOS, Windows).
+The **Ars Arcanum Diagnostics Engine** (`src/arcanum/core/diagnostics.py` and facade `scripts/lib/diagnostics.py`) is an offline host capability scanner, environment validator, filesystem integrity prober, toolchain verifier, and redacted bug bundle exporter engineered to guarantee deterministic execution across diverse operating systems (Linux, macOS, Windows).
 
 Creative writers and digital publishers operate in heterogeneous technical environments ranging from air-gapped Linux laptops to macOS workstations and Windows desktop towers. Toolchain failures (such as missing typesetting engines, out-of-date Python interpreters, broken path separators, or lack of file-locking primitives) can lead to silent compilation failures, lost manuscript revisions, or degraded formatting.
 
@@ -116,7 +116,10 @@ arcanum doctor --probe filesystem,typesetting
 # 4. Verbose debug mode (inspects environment variables and paths)
 arcanum doctor --verbose
 
-# 5. CLI aliases
+# 5. Generate redacted, anonymized bug report bundle ZIP for troubleshooting
+arcanum doctor --bundle bug_report.zip
+
+# 6. CLI aliases
 arcanum diag
 arcanum syscheck
 ```
@@ -126,6 +129,7 @@ arcanum syscheck
 | Flag / Option | Short | Type | Default | Description |
 |---|---|---|---|---|
 | `--json` | `-j` | `bool` | `False` | Emits structured JSON diagnostics report to stdout. |
+| `--bundle` | `-b` | `Path` | `None` | Exports redacted bug report ZIP bundle stripping prose and sensitive tokens. |
 | `--probe` | `-p` | `str` | `all` | Specific probes to execute: `core`, `typesetting`, `security`, `all`. |
 | `--verbose` | `-v` | `bool` | `False` | Prints resolved binary paths and kernel details. |
 | `--strict` | `-s` | `bool` | `False` | Returns non-zero exit code if any optional tool is missing. |
@@ -186,15 +190,22 @@ flowchart TD
   *Case study in enduring plain-text longevity and sovereign authorial tooling.*
 
 
-<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
-## Phase 1–4 Production CLI & Continuity Cross-Reference
+## Production CLI & Continuity Cross-Reference
+ 
+| Capability | Command | Native Engine | Compatibility Facade |
+| :--- | :--- | :--- | :--- |
+| **Visual Studio Cockpit** | `python scripts/arcanum studio [VAULT] [--port 4242]` | `src.arcanum.server.daemon` | `scripts/lib/studio_server.py` |
+| **Unified Continuity Suite** | `python scripts/arcanum continuity-suite [VAULT]` | `src.arcanum.worldbible.runner` | `scripts/lib/vault_continuity_runner.py` |
+| **Phase-Aware Effort Points** | `python scripts/arcanum sprint-effort [ARGS]` | `src.arcanum.manuscript.velocity` | `scripts/lib/phase_effort_engine.py` |
+| **Epistemic POV Firewall** | `python scripts/arcanum validate-epistemic [VAULT]` | `src.arcanum.worldbible.epistemics` | `scripts/lib/epistemic_firewall.py` |
+| **Timeline & Route Physics** | `python scripts/arcanum timeline-audit [VAULT]` | `src.arcanum.worldbible.timeline` | `scripts/lib/timeline_solver.py` |
+| **PolyGlot Conlang Linter** | `python scripts/arcanum conlang-check [ARGS]` | `src.arcanum.worldbible.conlang` | `scripts/lib/conlang_linter.py` |
+| **Resource Conservation Ledger** | `python scripts/arcanum ledger-audit [VAULT]` | `src.arcanum.worldbible.ledger` | `scripts/lib/resource_ledger.py` |
+| **Multi-POV Narrative Braid** | `python scripts/arcanum braid [MANUSCRIPT]` | `src.arcanum.manuscript.braid` | `scripts/lib/narrative_braid.py` |
+| **Prose Word & Dialogue Metrics** | `python scripts/arcanum count-words [FILE/VAULT]` | `src.arcanum.manuscript.word_counter` | `scripts/lib/word_counter.py` |
+| **Fast Paragraph Diff & Scraps** | `python scripts/arcanum diff-fast OLD.md NEW.md` | `src.arcanum.manuscript.diff` | `scripts/lib/diff_core.py` |
+| **Word Tracked Changes Sync** | `python scripts/arcanum docx-tracked [export/pull]` | `src.arcanum.publishing.docx` | `scripts/lib/docx_tracked_changes.py` |
+| **Multi-Format Publishing** | `python scripts/arcanum publish [MANUSCRIPT] --format ...` | `src.arcanum.publishing.publisher` | `scripts/lib/publisher.py` |
+| **System Diagnostics & Doctor** | `python scripts/arcanum doctor [VAULT]` | `src.arcanum.core.diagnostics` | `scripts/lib/diagnostics.py` |
+| **Schema Migration Engine** | `python scripts/arcanum migrate [VAULT]` | `src.arcanum.core.migrate` | `scripts/lib/migrate.py` |
 
-- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
-- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
-- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
-- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
-- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
-- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
-- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
-- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
-- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

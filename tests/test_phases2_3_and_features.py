@@ -330,6 +330,31 @@ class TestSpeculativeWorldbuilderEngines(unittest.TestCase):
         self.assertEqual(len(analysis["drought_alerts"]), 1)
         self.assertEqual(analysis["drought_alerts"][0]["absent_words"], 29_000)
 
+    def test_narrative_braid_chronological_dual_axis(self) -> None:
+        # Non-linear story: Chapter 1 is Day 50, Chapter 2 is a Flashback to Day 10, Chapter 3 is Day 60
+        chapters = [
+            ChapterBraidNode(1, "Ch 1 Present", "Kael", (), 3_000, 0.3, 5, chronological_order=50.0),
+            ChapterBraidNode(2, "Ch 2 Flashback", "Lyra", (), 4_000, 0.4, 6, chronological_order=10.0),
+            ChapterBraidNode(3, "Ch 3 Present", "Kael", (), 3_500, 0.2, 7, chronological_order=60.0),
+        ]
+        # Manuscript reading order
+        analysis_ms = analyze_narrative_braid(chapters, sort_by="manuscript")
+        self.assertEqual(analysis_ms["chapters"][0]["chapter_title"], "Ch 1 Present")
+        self.assertEqual(analysis_ms["chapters"][1]["chapter_title"], "Ch 2 Flashback")
+
+        # Chronological in-universe order
+        analysis_chrono = analyze_narrative_braid(chapters, sort_by="chronological")
+        self.assertEqual(analysis_chrono["chapters"][0]["chapter_title"], "Ch 2 Flashback")
+        self.assertEqual(analysis_chrono["chapters"][1]["chapter_title"], "Ch 1 Present")
+        self.assertTrue(analysis_chrono["has_chronological_data"])
+
+        # Render HTML
+        html_path = self.root / "braid_chrono.html"
+        rendered = render_braid_html(chapters, html_path, sort_by="chronological")
+        self.assertTrue(html_path.exists())
+        self.assertIn("Chronological Story Order", rendered)
+        self.assertIn("Timeline: Day 10", rendered)
+
     def test_vault_continuity_suite_with_constitution_negation(self) -> None:
         # Create manuscript directory and chapter
         manuscript_dir = self.root / "Manuscript" / "Book-01" / "Draft-01"
@@ -355,6 +380,32 @@ class TestSpeculativeWorldbuilderEngines(unittest.TestCase):
         self.assertFalse(res_negated["constitution"]["active_rules"].__contains__("EPI-201"))
         self.assertFalse(res_negated["constitution"]["active_rules"].__contains__("TIME-301"))
         self.assertTrue(res_negated["passed"])
+
+    def test_arcanum_subpackage_facades(self) -> None:
+        from src.arcanum import core, manuscript, publishing, ui, worldbible
+        self.assertTrue(callable(core.atomic_write))
+        self.assertTrue(callable(core.resolve_constitution_cascade))
+        self.assertTrue(callable(core.ArcanumLock))
+        self.assertTrue(callable(core.get_engine))
+        self.assertTrue(callable(core.register_user_engine))
+        self.assertTrue(isinstance(core.EngineCategory.CORE.value, str))
+        self.assertTrue(callable(manuscript.analyze_narrative_braid))
+        self.assertTrue(callable(manuscript.scan_manuscript_braid))
+        self.assertTrue(callable(manuscript.scan_portfolio))
+        self.assertTrue(callable(manuscript.start_sprint))
+        self.assertTrue(callable(publishing.build_native_epub3))
+        self.assertTrue(callable(publishing.publish_manuscript))
+        self.assertTrue(callable(worldbible.audit_vault_epistemic))
+        self.assertTrue(callable(worldbible.render_orbital_calendar_svg))
+        self.assertTrue(callable(worldbible.render_etymology_tree_svg))
+        self.assertTrue(callable(worldbible.build_single_file_codex))
+        self.assertTrue(callable(worldbible.scan_world_vault))
+        self.assertTrue(callable(ui.render_codex_html))
+        self.assertTrue(callable(ui.render_portfolio_html))
+        self.assertTrue(callable(ui.generate_revision_heatmap_html))
+        self.assertTrue(callable(ui.render_orbital_calendar_svg))
+        self.assertTrue(callable(ui.render_etymology_tree_svg))
+        self.assertTrue(callable(ui.render_braid_html))
 
 
 if __name__ == "__main__":

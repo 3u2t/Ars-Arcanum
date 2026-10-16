@@ -5,7 +5,7 @@
 
 ## 1. Overview & Theoretical Rationale
 
-The **Ars Arcanum Omnibus Engine** (`scripts/lib/omnibus.py`) is an offline multi-volume compilation, series-wide table-of-contents harmonizer, front/back matter sequencer, and publication release bundler engineered for epic fantasy sagas, space opera trilogies, and serialized multi-part fiction.
+The **Ars Arcanum Omnibus Engine** (`src/arcanum/publishing/omnibus.py` and facade `scripts/lib/omnibus.py`) is an offline multi-volume compilation, series-wide table-of-contents harmonizer, front/back matter sequencer, and publication release bundler engineered for epic fantasy sagas, space opera trilogies, and serialized multi-part fiction.
 
 Authors and publishers assembling multi-volume works (spanning 3 to 10+ books, 300,000 to 1,500,000+ words) encounter complex structural and typographical challenges when merging individual manuscripts into a unified collector's edition or complete series ebook:
 1. **Front/Back Matter Chaos**: Each independent volume contains its own title page, copyright notice, dedication, and acknowledgments, which must be restructured according to publication standards (Chicago Manual of Style).
@@ -271,15 +271,22 @@ flowchart TD
   *Masterclass in balanced trilogy-of-trilogies structural pacing ($90\text{k}-120\text{k}\text{ words}$ per volume with consistent architectural symmetry).*
 
 
-<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
-## Phase 1–4 Production CLI & Continuity Cross-Reference
+## Production CLI & Continuity Cross-Reference
+ 
+| Capability | Command | Native Engine | Compatibility Facade |
+| :--- | :--- | :--- | :--- |
+| **Visual Studio Cockpit** | `python scripts/arcanum studio [VAULT] [--port 4242]` | `src.arcanum.server.daemon` | `scripts/lib/studio_server.py` |
+| **Unified Continuity Suite** | `python scripts/arcanum continuity-suite [VAULT]` | `src.arcanum.worldbible.runner` | `scripts/lib/vault_continuity_runner.py` |
+| **Phase-Aware Effort Points** | `python scripts/arcanum sprint-effort [ARGS]` | `src.arcanum.manuscript.velocity` | `scripts/lib/phase_effort_engine.py` |
+| **Epistemic POV Firewall** | `python scripts/arcanum validate-epistemic [VAULT]` | `src.arcanum.worldbible.epistemics` | `scripts/lib/epistemic_firewall.py` |
+| **Timeline & Route Physics** | `python scripts/arcanum timeline-audit [VAULT]` | `src.arcanum.worldbible.timeline` | `scripts/lib/timeline_solver.py` |
+| **PolyGlot Conlang Linter** | `python scripts/arcanum conlang-check [ARGS]` | `src.arcanum.worldbible.conlang` | `scripts/lib/conlang_linter.py` |
+| **Resource Conservation Ledger** | `python scripts/arcanum ledger-audit [VAULT]` | `src.arcanum.worldbible.ledger` | `scripts/lib/resource_ledger.py` |
+| **Multi-POV Narrative Braid** | `python scripts/arcanum braid [MANUSCRIPT]` | `src.arcanum.manuscript.braid` | `scripts/lib/narrative_braid.py` |
+| **Prose Word & Dialogue Metrics** | `python scripts/arcanum count-words [FILE/VAULT]` | `src.arcanum.manuscript.word_counter` | `scripts/lib/word_counter.py` |
+| **Fast Paragraph Diff & Scraps** | `python scripts/arcanum diff-fast OLD.md NEW.md` | `src.arcanum.manuscript.diff` | `scripts/lib/diff_core.py` |
+| **Word Tracked Changes Sync** | `python scripts/arcanum docx-tracked [export/pull]` | `src.arcanum.publishing.docx` | `scripts/lib/docx_tracked_changes.py` |
+| **Multi-Format Publishing** | `python scripts/arcanum publish [MANUSCRIPT] --format ...` | `src.arcanum.publishing.publisher` | `scripts/lib/publisher.py` |
+| **System Diagnostics & Doctor** | `python scripts/arcanum doctor [VAULT]` | `src.arcanum.core.diagnostics` | `scripts/lib/diagnostics.py` |
+| **Schema Migration Engine** | `python scripts/arcanum migrate [VAULT]` | `src.arcanum.core.migrate` | `scripts/lib/migrate.py` |
 
-- **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
-- **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
-- **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
-- **Custom Calendar & Route Physics**: `python scripts/arcanum timeline-audit [VAULT]` (`scripts/lib/timeline_solver.py`)
-- **PolyGlot Conlang & Phonotactic Linter**: `python scripts/arcanum conlang-check` (`scripts/lib/conlang_linter.py`)
-- **Hard Magic & Sci-Fi Resource Ledger**: `python scripts/arcanum ledger-audit [VAULT]` (`scripts/lib/resource_ledger.py`)
-- **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
-- **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
-- **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)

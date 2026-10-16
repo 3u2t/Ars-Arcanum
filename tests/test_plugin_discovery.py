@@ -17,6 +17,7 @@ from scripts.lib.registry import (
     discover_user_plugins,
     load_user_plugin,
     register_user_engine,
+    reset_registry,
 )
 
 
@@ -39,6 +40,7 @@ class TestPluginDiscovery(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
+        reset_registry()
 
     def test_base_craft_engine_subclass(self) -> None:
         """Verifies BaseCraftEngine subclassing and spec extraction."""
