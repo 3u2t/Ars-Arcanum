@@ -15,8 +15,16 @@ from __future__ import annotations
 from datetime import date
 import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_SCRIPTS_DIR = _REPO_ROOT / "scripts"
+_LIB_DIR = _SCRIPTS_DIR / "lib"
+for _p in (str(_REPO_ROOT), str(_SCRIPTS_DIR), str(_LIB_DIR)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from phase_effort_engine import (
     BookProjectSpec,

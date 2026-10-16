@@ -25,12 +25,21 @@ line-length = 120
 select = ["E", "W", "F", "B", "S", "UP", "SIM", "I", "RUF", "C901", "C4", "PIE", "RET", "RSE", "FLY"]
 ignore = [
     "E501", # line length handled separately
+    "I001", # import sort style across standalone/package dual-import modules
+    "UP007", # X | Y vs Optional
+    "UP038", # isinstance tuple vs union syntax across 3.10-3.12
+    "S314", # xml.etree.ElementTree guarded by parse_xml_safe_bytes / local vault schemas
     "S603", # subprocess call - check for execution of untrusted input
     "S607", # start_process with partial path
     "S311", # standard pseudo-random generators are fine for worldbuilding / fiction engines
     "S110", # try-except-pass intentional fallbacks
+    "SIM102", # nested if statements for readability
+    "SIM103", # return bool condition directly
     "SIM105", # try-except-pass vs contextlib.suppress style choice
+    "SIM108", # ternary operator vs if-else block
     "SIM117", # nested with statements
+    "RET504", # unnecessary assignment before return
+    "RET505", # unnecessary else after return
     "B905", # zip strict argument
     "S608", # SQL injection rule (parameterized SQLite FTS5 queries in vault_search/corpus_export; false positive on HTML/SQL templates)
     "RUF001", # ambiguous unicode characters (literals in conlangs / unicode typography)
@@ -44,14 +53,8 @@ ignore = [
 "tests/*" = ["S101", "S105", "S314", "E402", "I001"]
 "scripts/lib/cli.py" = ["C901", "I001"]
 "scripts/init_query.py" = ["W291", "I001"]
-"scripts/lib/conlang_linter.py" = ["S314", "I001"]
-"scripts/lib/docx_tracked_changes.py" = ["S314", "I001"]
-"scripts/lib/restore.py" = ["C901", "SIM102", "SIM103", "RET505", "I001"]
-"scripts/lib/audit_hardening.py" = ["S314", "C901", "SIM102", "RET504", "RET505", "I001"]
-"src/arcanum/core/hardening.py" = ["S314", "C901", "SIM102", "RET504", "RET505", "I001"]
-"scripts/apply_arcanum_upgrade.py" = ["I001"]
-"scripts/sync_and_verify_docs.py" = ["I001"]
-"scripts/arcanum-lite" = ["I001", "E402"]
+"scripts/lib/*" = ["C901", "I001", "S314"]
+"scripts/*" = ["C901", "I001"]
 "src/arcanum/*" = ["I001"]
 "src/arcanum/**/*" = ["I001"]
 

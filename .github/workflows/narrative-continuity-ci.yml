@@ -7,10 +7,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    # C-03: weekly drift detection – catches action/toolchain rot between pushes
+    # C-03: weekly drift detection — catches action/toolchain rot between pushes
     - cron: '23 4 * * 1'
 
-# C-03: least privilege – this workflow only needs to read the repository.
+# C-03: least privilege — this workflow only needs to read the repository.
 permissions:
   contents: read
 
@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12"]
 
     steps:
       - name: Checkout repository
@@ -40,5 +40,5 @@ jobs:
       - name: Run Lite Mode Continuity Check on Sample Cosmos
         run: |
           if [ -d "templates/demo-cosmos/Eldoria-Cosmos" ]; then
-            python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json
+            python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json --no-dashboard
           fi

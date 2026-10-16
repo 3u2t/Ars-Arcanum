@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess  # nosec B404
 import sys
-from pathlib import Path
 
 DISCLAIMER = "AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE"
 MARKER = "<!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->"

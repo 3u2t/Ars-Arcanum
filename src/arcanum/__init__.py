@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.arcanum.core.hardening import (
+from scripts.lib.audit_hardening import (
     LITE_OBSIDIAN_PLUGINS,
     HardenedArchiveLimits,
     LiteCheckReport,
@@ -17,7 +17,7 @@ from src.arcanum.core.hardening import (
     validate_safe_zip_archive,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "LITE_OBSIDIAN_PLUGINS",

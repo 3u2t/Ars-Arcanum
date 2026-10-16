@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
-"""Production Release Verification, Repo Uncluttering & Audit Upgrade Helper (`scripts/apply_arcanum_upgrade.py`)."""
+"""Master Upgrade, Documentation Synchronizer, Repo Unclutterer & Test Runner (`scripts/apply_arcanum_upgrade.py`)."""
 
 from __future__ import annotations
 
+import datetime
+import enum
+import os
+from pathlib import Path
 import subprocess  # nosec B404
 import sys
-from pathlib import Path
+import typing
+
+# Ensure Python 3.10 compatibility if any module in the repo references Python 3.11+ stdlib attributes
+if not hasattr(datetime, "UTC"):
+    setattr(datetime, "UTC", datetime.timezone.utc)  # noqa: B010
+if not hasattr(enum, "StrEnum"):
+    class _StrEnum(str, enum.Enum):
+        pass
+    setattr(enum, "StrEnum", _StrEnum)  # noqa: B010
+if not hasattr(typing, "Self"):
+    setattr(typing, "Self", typing.Any)  # noqa: B010
 
 REQUIRED_MODULES: tuple[str, ...] = (
     "vault_index.py",
@@ -34,8 +48,9 @@ CROSS_REF_MARKER = "<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->"
 CROSS_REF_FOOTER = """
 
 <!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
-## Phase 1-4 Production CLI & Continuity Cross-Reference
+## Phase 1-5 Production CLI & Continuity Cross-Reference
 
+- **Obsidian Lite Mode (4 Core Compilers + 5-Plugin Profile)**: `python3 -m scripts.lib.audit_hardening [VAULT]` (`scripts/lib/audit_hardening.py`)
 - **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
 - **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
 - **Epistemic POV & Spoiler Firewall**: `python scripts/arcanum validate-epistemic [VAULT]` (`scripts/lib/epistemic_firewall.py`)
@@ -58,17 +73,17 @@ def _unclutter_repo(repo_root: Path) -> None:
 
 
 def _sync_docs_footers(docs_dir: Path) -> None:
-    """Ensure every `docs/*.md` file embeds the required Phase 1-4 cross-reference footer."""
+    """Ensure every `docs/*.md` file embeds the required Phase 1-5 cross-reference footer."""
     if not docs_dir.is_dir():
         return
     synced = 0
     for md_file in sorted(docs_dir.rglob("*.md")):
         text = md_file.read_text(encoding="utf-8")
-        if CROSS_REF_MARKER not in text and "Phase 1-4" not in text and "continuity-suite" not in text:
+        if CROSS_REF_MARKER not in text and "Phase 1-4" not in text and "Phase 1-5" not in text and "continuity-suite" not in text:
             md_file.write_text(text.rstrip() + "\n" + CROSS_REF_FOOTER, encoding="utf-8")
             synced += 1
     if synced:
-        print(f"[DOCS] Synchronized Phase 1-4 cross-reference footer across {synced} docs/*.md file(s).")
+        print(f"[DOCS] Synchronized cross-reference footer across {synced} docs/*.md file(s).")
 
 
 def _prune_git_branches(repo_root: Path) -> None:
@@ -106,9 +121,22 @@ def main() -> int:
         return 1
     print(f"[OK] Verified all {len(REQUIRED_MODULES)} production modules in scripts/lib/.")
 
+    env = dict(os.environ)
+    existing_pp = env.get("PYTHONPATH", "")
+    extra_pp = f"{repo_root}:{repo_root / 'scripts'}:{lib_dir}"
+    env["PYTHONPATH"] = f"{extra_pp}:{existing_pp}" if existing_pp else extra_pp
+
+    runner_code = (
+        "import datetime, enum, typing, unittest, sys; "
+        "setattr(datetime, 'UTC', getattr(datetime, 'UTC', datetime.timezone.utc)); "
+        "sys.exit(0 if unittest.TextTestRunner(verbosity=2).run("
+        f"unittest.defaultTestLoader.discover({str(tests_dir)!r}, pattern='test_*.py')"
+        ").wasSuccessful() else 1)"
+    )
     res = subprocess.run(  # nosec B603
-        [sys.executable, "-m", "unittest", "discover", "-s", str(tests_dir), "-p", "test_*.py", "-v"],
+        [sys.executable, "-c", runner_code],
         cwd=str(repo_root),
+        env=env,
         check=False,
     )
     return res.returncode

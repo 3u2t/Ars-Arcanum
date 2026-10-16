@@ -1,0 +1,18 @@
+{
+  "profile": "ars-arcanum-lite",
+  "version": "0.1.0",
+  "description": "Low-friction 5-plugin Obsidian profile paired with the 4 core deterministic compilers.",
+  "enabled_plugins": [
+    "dataview",
+    "templater-obsidian",
+    "omnisearch",
+    "obsidian-style-settings",
+    "longform"
+  ],
+  "enabled_compilers": [
+    "EPI-",
+    "TIME-",
+    "CON-",
+    "LED-"
+  ]
+}

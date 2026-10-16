@@ -3,53 +3,21 @@
 All notable changes to **Ars Arcanum** are documented in this file.
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and Semantic Versioning.
 
-## [0.1.0] - 2026-10-16
+## [0.1.0] - 2026-10-15
 
 ### Added
-- **Visual Web Studio Cockpit & Local Daemon (`src/arcanum/server/daemon.py`, `src/arcanum/ui/studio_app.html`)**:
-  - Sovereign, air-gapped `ThreadingHTTPServer` bound strictly to `127.0.0.1:4242` with zero network transmission.
-  - Single-file HTML5/CSS3 cockpit enforcing strict Content-Security-Policy (`default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; media-src data: blob:;`).
-  - Four integrated studios: Manuscript Catalog, Continuity & Twist Assistant, Sprint Engine, and Publishing Center.
-- **Native Obsidian Companion Plugin (`templates/world-bible/.obsidian/plugins/ars-arcanum/`)**:
-  - Real-time status bar continuity badge (`Arcanum: Clean` vs `Arcanum: N Issues`).
-  - One-click ribbon icon opening the Visual Studio Cockpit in the user's default browser.
-  - Native command palette shortcuts for running diagnostics and writing sprints.
-- **1-Click "Allow / Intended Twist" Rule Suppression (`!RULE_ID`)**:
-  - Dynamic negation pattern in `constitution.yaml` allowing deliberate authorial twists without disabling entire continuity compilers.
-- **Native Zero-Pip EPUB3 Compiler (`src/arcanum/publishing/epub.py`)**:
-  - Pure standard-library EPUB 3.3 and EPUB Accessibility 1.1 generator using `zipfile` and `xml.etree.ElementTree`.
-  - Enforces uncompressed `mimetype` header at byte offset 38, deterministic timestamps, semantic navigation documents (`nav.xhtml`), fallback `toc.ncx`, and automatic CriticMarkup resolution.
-- **Pure-Python SVG World Visualizers (`src/arcanum/worldbible/visualizers.py`)**:
-  - Concentric celestial calendar wheels visualizing planetary months, dual-moon phases, and seasonal solstices.
-  - Hierarchical node-link conlang etymology trees tracing proto-roots into modern daughter languages.
-  - Visual multi-POV narrative braid swimlanes showing character pacing and perspective droughts across acts.
-- **Theme Studio & Procedural Typewriter Acoustics (`src/arcanum/ui/theme.py`, `src/arcanum/ui/studio.py`)**:
-  - 11 WCAG AAA compliant visual theme presets (Sovereign Dark, Classic Light, Amber CRT, Cyber Neon, Synthwave Outrun, Illuminated Codex, Grimdark Iron, etc.).
-  - 10 mechanical typewriter acoustic models synthesized on the fly via the browser Web Audio API (Underwood, Remington, Selectric II, Smith Corona, Cherry Blue, Thock, Cyber Terminal, Steampunk, Scribe Quill, Gothic Relic).
-- **Unicode Prose Word Counter & Literary Metrics (`src/arcanum/manuscript/word_counter.py`)**:
-  - Unicode-aware prose word counting, CriticMarkup revision stripping, dialogue vs. exposition ratio calculation, and CJK ideograph segmentation.
-- **System Doctor & Diagnostic Bundler (`src/arcanum/core/diagnostics.py`)**:
-  - Automated inspection of developer toolchain (`python`, `git`, `typst`, `pandoc`, `ruff`, `shellcheck`, GTK).
-  - Generation of redacted, anonymized bug report ZIP bundles stripping author prose and sensitive tokens.
-- **Schema Migration Engine (`src/arcanum/core/migrate.py`)**:
-  - Automatic Schema 1.0 upgrade and non-destructive folder restructuring (`05-Backups/` $\to$ `Backups/`, `04-Publishing/` $\to$ `Exports/`, `.gitignore` invariant sync).
-- **Windows Zero-Friction Double-Click Launchers (`launchers/launch_studio.bat`, `launchers/setup_windows.bat`)**:
-  - One-click desktop shortcuts and background `pythonw` studio launching for non-technical fiction writers.
-- **Cross-Vault Series Federation**:
-  - Support for `world_root` directive in `manuscript_config.json`, enabling multi-book sagas to share a single master universe bible.
-
-### Changed
-- **Draft Promotion Physical Inode Separation**:
-  - Transitioned `promote_draft_hardlinked()` in `src/arcanum/manuscript/drafts.py` and `scripts/lib/diff_core.py` to use `shutil.copy2` for physical inode separation.
-  - Set `0o444` read-only permissions on parent draft directories, ensuring text editors (Obsidian, VS Code) cannot mutate historical baselines.
-- **Windows File Indexer Backoff Retry**:
-  - Added exponential retry backoff (5 attempts across 320ms) inside `atomic_write()` in `src/arcanum/core/storage.py` and `scripts/lib/fs_utils.py` to absorb transient indexer/antivirus locks on Windows.
-- **Cross-Platform Advisory Locking**:
-  - Unified `ArcanumLock` (`src/arcanum/core/locking.py`, `scripts/lib/lockfile.py`) utilizing `fcntl.flock` on Linux/macOS and `msvcrt.locking` on Windows.
-- **Modular Native Package Migration**:
-  - Migrated all engine implementations into structured Python packages under `src/arcanum/` (`core`, `manuscript`, `worldbible`, `publishing`, `ui`, `server`).
-  - Refactored `scripts/lib/` modules into 100% backward-compatible facades re-exporting native symbols.
-- **Test Suite & Type Safety Expansion**:
-  - Test suite expanded to **692 unit and integration tests passing at 100%** (690 passed, 2 skipped, 0 failures, 0 errors).
-  - Static type checking verified clean across all **220 source files** in strict `mypy` mode.
-  - Branch test coverage verified at **81%** across all packages.
+- **Phase 5 Audit Hardening & Obsidian Lite Mode (`scripts/lib/audit_hardening.py`, `src/arcanum/cli_bridge.py`)**: Bounded ZIP/XML archive validation (`validate_safe_zip_archive`, `parse_xml_safe_bytes`), fuzz-resilient YAML frontmatter extraction (`parse_frontmatter_hardened`), CriticMarkup token balancing (`sanitize_critic_markup`), hybrid Latin + CJK Unicode telemetry (`normalize_cjk_and_unicode_prose`), 5-plugin Obsidian Lite Mode (`run_lite_continuity_check`), and 3-tier documentation index (`docs/INDEX.md`, `docs/LITE_MODE.md`).
+- **Phase 1 Unified VaultIndex DAL (`scripts/lib/vault_index.py`)**: Thread-safe, mtime-keyed `VaultIndex` (`CACHE_VERSION = 3`) with `is_safe_subpath` path-traversal defense, `atomic_write` hardlink-safe replacement, multiline YAML block-scalar (`|`, `>`) frontmatter parsing, literary multi-paragraph dialogue telemetry, code-fence-safe wikilink extraction, and 16-char SHA-256 paragraph hashing (`arcanum vault-index`).
+- **Feature 1 — Phase-Aware Effort & Career Velocity Engine (`scripts/lib/phase_effort_engine.py`)**: Implements all 9 canonical project stages (`Concept` through `Publishing`), Phase-Aware Effort Multipliers (`1.00x` First Draft and on-stage Outlining, `0.50x` Worldbuilding and off-phase Outlining, `0.20x` Revision-stage edits, and `0.00x` off-phase Revision block to prevent premature editing), 2,000-point daily goal, 730,000-word annual target, and 15,000,000-word career milestone forecasting (`arcanum sprint-effort` / `arcanum effort`).
+- **Feature 2 — Epistemic POV & Spoiler Firewall (`scripts/lib/epistemic_firewall.py`)**: Chronological DAG solver auditing character knowledge baselines (`knows:`) against chapter reveals (`learns:`) and references (`references:`) to flag premature spoiler leaks (`EPI-201`), unframed mythic lore (`EPI-202`), and orphan reveals (`EPI-203`) (`arcanum validate-epistemic` / `arcanum epistemic`).
+- **Feature 3 — Custom Planetary Calendar & Biome Route Physics Solver (`scripts/lib/timeline_solver.py`)**: Audits multi-planetary travel routes, orbital calendar conversions, and biome movement constraints.
+- **Feature 4 — PolyGlot Conlang Lexicon Importer & Phonotactic Linter (`scripts/lib/conlang_linter.py`)**: Zero-dependency phonotactic linter and lexicon validator.
+- **Feature 5 — Hard Magic & Sci-Fi Resource Conservation Ledger (`scripts/lib/resource_ledger.py`)**: Audits finite resource balance in fictional magic/sci-fi systems.
+- **Feature 6 — Interactive Narrative Braid & POV Drought Visualizer (`scripts/lib/narrative_braid.py`)**: Computes character POV distribution and drought metrics across manuscript chapters.
+- **Phase 4 Unified Vault Continuity Runner & Obsidian Live Callout Bridge (`scripts/lib/vault_continuity_runner.py`)**
+- **Phase 2 & 3 Architectural Refactor Modules**:
+  - `scripts/lib/diff_core.py` (`arcanum diff-fast`)
+  - `scripts/lib/typed_constitution.py` (`arcanum typed-constitution`)
+  - `scripts/lib/docx_tracked_changes.py` (`arcanum docx-tracked`)
+  - `scripts/lib/plugin_sandbox.py` (`arcanum plugin-sandbox`)
+  - `src/arcanum/` layered subpackage hierarchy (`core`, `manuscript`, `worldbible`, `publishing`, `ui`).

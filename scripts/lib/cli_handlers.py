@@ -8,8 +8,8 @@ redirection for retired engines, and the canonical dispatch routing table.
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable
+import sys
 
 
 def _handle_matter(dispatch_sub_fn: Callable[[str, list[str]], int], rest: list[str]) -> int:
@@ -146,9 +146,6 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "catalog": ("module", "lib.portfolio"),
     "series-overview": ("module", "lib.portfolio"),
     "author-stats": ("module", "lib.portfolio"),
-    "studio": ("module", "lib.studio_server"),
-    "web-studio": ("module", "lib.studio_server"),
-    "cockpit": ("module", "lib.studio_server"),
     "docx": ("module", "lib.docx_sync"),
     "docx-sync": ("module", "lib.docx_sync"),
     "sync-docx": ("module", "lib.docx_sync"),
@@ -235,6 +232,8 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "validate-epistemic": ("module", "lib.epistemic_firewall"),
     "epistemic": ("module", "lib.epistemic_firewall"),
     "continuity-suite": ("module", "lib.vault_continuity_runner"),
+    "lite-check": ("module", "lib.audit_hardening"),
+    "arcanum-lite": ("module", "lib.audit_hardening"),
     "obsidian-dashboard": ("module", "lib.vault_continuity_runner"),
     # --- Standalone Python/Shell Scripts ---
     "query": ("script", "init_query.py"),
@@ -317,6 +316,7 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "hub": ("handler", "pruned_hub"),
     "studio-hub": ("handler", "pruned_hub"),
     "dashboard": ("handler", "pruned_hub"),
+    "studio": ("handler", "pruned_zen"),
     "zen": ("handler", "pruned_zen"),
     "zen-studio": ("handler", "pruned_zen"),
     "ambient": ("handler", "pruned_ambient"),

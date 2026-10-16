@@ -1,38 +1,134 @@
-#!/usr/bin/env python3
-"""Subprocess Capability-Sandboxed Plugin Runner for Ars Arcanum (scripts/lib/plugin_sandbox.py).
+"""Subprocess Capability-Sandboxed Plugin Runner for Ars Arcanum (Phase 3B Refactor).
 
-Delegated wrapper for native `src.arcanum.core.sandbox`.
-Maintains 100% backward compatibility for all CLI invocations and imports.
+Hardens `scripts/lib/registry.py` by executing third-party or user plugins located in
+`.arcanum/plugins/*.py` inside an isolated Python subprocess (`python3 -I`) communicating
+strictly via JSON over `stdin`/`stdout`.
+
+Repository Target: `scripts/lib/plugin_sandbox.py`
 """
 
 from __future__ import annotations
 
-import sys
+import argparse
+from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
+import subprocess  # nosec B404
+import sys
+from typing import Any
 
-# Add project root to path for src.arcanum resolution
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
+try:
+    from lib.vault_index import PathSecurityError, is_safe_subpath
+except ImportError:
+    from vault_index import PathSecurityError, is_safe_subpath
 
-import src.arcanum.core.sandbox as _native  # noqa: E402, F401
-from src.arcanum.core.sandbox import (  # noqa: E402
-    PluginExecutionError,
-    SandboxedPluginResult,
-    main,
-    run_plugin_sandboxed,
-)
 
-# Register aliases into sys.modules so imports work seamlessly
-for _alias in ("plugin_sandbox", "lib.plugin_sandbox", "scripts.lib.plugin_sandbox"):
-    sys.modules[_alias] = sys.modules[__name__]
+class PluginExecutionError(RuntimeError):
+    """Raised when a sandboxed plugin times out, exits non-zero, or emits malformed JSON."""
 
-__all__ = [
-    "PluginExecutionError",
-    "SandboxedPluginResult",
-    "main",
-    "run_plugin_sandboxed",
-]
+
+@dataclass(frozen=True)
+class SandboxedPluginResult:
+    """Validated response returned from an isolated plugin subprocess."""
+
+    plugin_name: str
+    status: str
+    output: dict[str, Any]
+    stderr_log: str
+
+
+def run_plugin_sandboxed(
+    plugin_script: Path,
+    payload: dict[str, Any],
+    *,
+    allowed_roots: tuple[Path, ...],
+    timeout_seconds: float = 5.0,
+    max_stdout_bytes: int = 1_048_576,
+) -> SandboxedPluginResult:
+    """Execute `plugin_script` in an isolated `sys.executable -I` subprocess with a JSON payload."""
+    resolved_script = plugin_script.resolve()
+    if not any(is_safe_subpath(root.resolve(), resolved_script) for root in allowed_roots):
+        raise PathSecurityError(
+            f"Plugin script {resolved_script} is outside allowed plugin roots: {allowed_roots}"
+        )
+    if not resolved_script.exists() or resolved_script.suffix.lower() != ".py":
+        raise FileNotFoundError(f"Invalid plugin script: {resolved_script}")
+
+    input_json = json.dumps(payload, sort_keys=True)
+    sanitized_env = {
+        "PATH": "/usr/bin:/bin",
+        "PYTHONIOENCODING": "utf-8",
+        "LC_ALL": "C.UTF-8",
+    }
+
+    try:
+        completed = subprocess.run(  # nosec B603
+            [sys.executable, "-I", "-B", str(resolved_script)],
+            input=input_json,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env=sanitized_env,
+            cwd=str(resolved_script.parent),
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise PluginExecutionError(
+            f"Plugin '{resolved_script.stem}' exceeded timeout of {timeout_seconds}s"
+        ) from exc
+
+    if completed.returncode != 0:
+        raise PluginExecutionError(
+            f"Plugin '{resolved_script.stem}' failed with exit code {completed.returncode}: "
+            f"{completed.stderr.strip()}"
+        )
+
+    raw_out = completed.stdout
+    if len(raw_out.encode("utf-8")) > max_stdout_bytes:
+        raise PluginExecutionError(
+            f"Plugin '{resolved_script.stem}' output exceeded {max_stdout_bytes} byte limit."
+        )
+
+    try:
+        parsed = json.loads(raw_out) if raw_out.strip() else {}
+        if not isinstance(parsed, dict):
+            raise ValueError("Top-level JSON output must be an object.")
+    except Exception as exc:
+        raise PluginExecutionError(
+            f"Plugin '{resolved_script.stem}' returned invalid JSON: {exc}"
+        ) from exc
+
+    return SandboxedPluginResult(
+        plugin_name=resolved_script.stem,
+        status=str(parsed.get("status", "ok")),
+        output=parsed,
+        stderr_log=completed.stderr.strip(),
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint for `arcanum plugin-sandbox`."""
+    parser = argparse.ArgumentParser(
+        prog="arcanum plugin-sandbox",
+        description="Execute a custom Ars Arcanum Python plugin in an isolated subprocess sandbox.",
+    )
+    parser.add_argument("plugin_script", type=Path, help="Path to plugin .py file")
+    parser.add_argument("--payload", default="{}", help="JSON payload string passed to stdin")
+    parser.add_argument("--allowed-root", type=Path, default=Path.cwd(), help="Allowed root directory")
+    parser.add_argument("--timeout", type=float, default=5.0, help="Execution timeout in seconds")
+    args = parser.parse_args(argv)
+
+    payload_dict = json.loads(args.payload)
+    res = run_plugin_sandboxed(
+        args.plugin_script,
+        payload_dict,
+        allowed_roots=(args.allowed_root,),
+        timeout_seconds=args.timeout,
+    )
+    sys.stdout.write(json.dumps(asdict(res), indent=2) + "\n")
+    return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
