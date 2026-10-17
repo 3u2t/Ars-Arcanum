@@ -12,6 +12,7 @@ Repository Target: `scripts/lib/timeline_solver.py`
 from __future__ import annotations
 
 import argparse
+from itertools import pairwise
 from dataclasses import asdict, dataclass
 import json
 import math
@@ -43,30 +44,43 @@ DEFAULT_TERRAIN_MULTIPLIER: dict[str, float] = {
 }
 
 
-@dataclass(frozen=True)
-class CustomCalendarSpec:
-    """Planetary calendar specification from `world.yaml`."""
+try:
+    from src.arcanum.worldbible.timeline import CustomCalendarSpec, render_orbital_calendar_svg
+except ImportError:
+    @dataclass(frozen=True)
+    class CustomCalendarSpec:  # type: ignore[no-redef]
+        """Planetary calendar specification from `world.yaml`."""
 
-    calendar_name: str
-    month_names: tuple[str, ...]
-    month_lengths: tuple[int, ...]
+        calendar_name: str
+        month_names: tuple[str, ...]
+        month_lengths: tuple[int, ...]
 
-    @property
-    def days_per_year(self) -> int:
-        return sum(self.month_lengths)
+        @property
+        def days_per_year(self) -> int:
+            return sum(self.month_lengths)
 
-    def to_absolute_day(self, year: int, month: int, day: int) -> int:
-        """Convert 1-indexed `(year, month, day)` to an absolute day integer from Epoch 0."""
-        if not (1 <= month <= len(self.month_lengths)):
-            raise ValueError(f"Month {month} out of range (1..{len(self.month_lengths)})")
-        max_day = self.month_lengths[month - 1]
-        if not (1 <= day <= max_day):
-            raise ValueError(
-                f"Day {day} out of range (1..{max_day}) for month {self.month_names[month - 1]}"
-            )
-        prior_years_days = (year - 1) * self.days_per_year
-        prior_months_days = sum(self.month_lengths[: month - 1])
-        return prior_years_days + prior_months_days + (day - 1)
+        def to_absolute_day(self, year: int, month: int, day: int) -> int:
+            """Convert 1-indexed `(year, month, day)` to an absolute day integer from Epoch 0."""
+            if not (1 <= month <= len(self.month_lengths)):
+                raise ValueError(f"Month {month} out of range (1..{len(self.month_lengths)})")
+            max_day = self.month_lengths[month - 1]
+            if not (1 <= day <= max_day):
+                raise ValueError(
+                    f"Day {day} out of range (1..{max_day}) for month {self.month_names[month - 1]}"
+                )
+            prior_years_days = (year - 1) * self.days_per_year
+            prior_months_days = sum(self.month_lengths[: month - 1])
+            return prior_years_days + prior_months_days + (day - 1)
+
+    def render_orbital_calendar_svg(  # type: ignore[no-redef]
+        calendar: CustomCalendarSpec,
+        *,
+        width: int = 600,
+        height: int = 600,
+        theme: str = "dark",
+    ) -> str:
+        return "<svg></svg>"
+
 
 
 @dataclass(frozen=True)
@@ -137,7 +151,7 @@ def audit_timeline_and_routes(
 
     anomalies: list[TimelineAnomaly] = []
     for char_name, char_events in by_character.items():
-        for prev_ev, curr_ev in zip(char_events, char_events[1:]):
+        for prev_ev, curr_ev in pairwise(char_events):
             prev_abs = calendar.to_absolute_day(prev_ev.year, prev_ev.month, prev_ev.day)
             curr_abs = calendar.to_absolute_day(curr_ev.year, curr_ev.month, curr_ev.day)
             elapsed = curr_abs - prev_abs
@@ -200,21 +214,23 @@ def audit_timeline_and_routes(
     }
 
 
-def audit_vault_timeline(vault_root: Path) -> dict[str, Any]:
+def audit_vault_timeline(vault_root: Path, *, world_root: Path | None = None) -> dict[str, Any]:
     """Automatically scan `world.yaml`, `Locations/*.md`, and chapter frontmatter via `VaultIndex`."""
     root = vault_root.resolve()
     cal_name = "Standard Solar Reckoning"
     month_lengths: tuple[int, ...] = (30,) * 12
 
-    world_yaml = root / "world.yaml"
-    if world_yaml.exists():
-        raw = world_yaml.read_text(encoding="utf-8")
-        wrapped = raw if raw.lstrip().startswith("---") else f"---\n{raw}\n---\n"
-        w_meta, _ = parse_frontmatter(wrapped)
-        if "calendar_name" in w_meta:
-            cal_name = str(w_meta["calendar_name"])
-        if isinstance(w_meta.get("month_lengths"), list) and w_meta["month_lengths"]:
-            month_lengths = tuple(int(x) for x in w_meta["month_lengths"])
+    # Load calendar from shared universe world_root first (if provided), then override from local
+    for search_root in ([world_root.resolve(), root] if world_root is not None else [root]):
+        world_yaml = search_root / "world.yaml"
+        if world_yaml.exists():
+            raw = world_yaml.read_text(encoding="utf-8")
+            wrapped = raw if raw.lstrip().startswith("---") else f"---\n{raw}\n---\n"
+            w_meta, _ = parse_frontmatter(wrapped)
+            if "calendar_name" in w_meta:
+                cal_name = str(w_meta["calendar_name"])
+            if isinstance(w_meta.get("month_lengths"), list) and w_meta["month_lengths"]:
+                month_lengths = tuple(int(x) for x in w_meta["month_lengths"])
 
     calendar = CustomCalendarSpec(
         calendar_name=cal_name,
@@ -222,12 +238,17 @@ def audit_vault_timeline(vault_root: Path) -> dict[str, Any]:
         month_lengths=month_lengths,
     )
 
+    # Scan nodes from both world_root and vault_root
+    all_nodes = []
+    if world_root is not None:
+        world_index = VaultIndex(world_root)
+        all_nodes.extend(world_index.scan_vault())
     index = VaultIndex(root)
-    nodes = index.scan_vault()
+    all_nodes.extend(index.scan_vault())
     routes: list[RouteEdge] = []
     events: list[CharacterTimelineEvent] = []
 
-    for idx_num, node in enumerate(nodes, start=1):
+    for idx_num, node in enumerate(all_nodes, start=1):
         fm = node.frontmatter
         rel = node.relative_path
         if "Locations/" in rel or fm.get("type") == "route":

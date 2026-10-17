@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Master Upgrade, Documentation Synchronizer, Repo Unclutterer & Test Runner (`scripts/apply_arcanum_upgrade.py`)."""
+"""Master Upgrade, Documentation Synchronizer, Workbook Auto-Sync & Test Runner (`scripts/apply_arcanum_upgrade.py`)."""
 
 from __future__ import annotations
 
@@ -35,6 +35,18 @@ REQUIRED_MODULES: tuple[str, ...] = (
     "narrative_braid.py",
     "vault_continuity_runner.py",
     "audit_hardening.py",
+    "workbook_sync.py",
+)
+
+ZERO_PIP_TEST_SUITES: tuple[str, ...] = (
+    "tests.test_audit_fuzz_hardening",
+    "tests.test_lite_mode_and_consolidation",
+    "tests.test_modernized_docs_integrity",
+    "tests.test_phase1_and_effort",
+    "tests.test_phases2_3_and_features",
+    "tests.test_production_cli_and_obsidian_bridge",
+    "tests.test_sample_projects_showcase",
+    "tests.test_workbook_ecosystem_sync",
 )
 
 CLUTTER_PATHS: tuple[str, ...] = (
@@ -48,8 +60,9 @@ CROSS_REF_MARKER = "<!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->"
 CROSS_REF_FOOTER = """
 
 <!-- ARS_ARCANUM_PHASE4_DOCS_SYNC -->
-## Phase 1-5 Production CLI & Continuity Cross-Reference
+## Phase 1-5 Production CLI, Workbook Sync & Continuity Cross-Reference
 
+- **Master Writing Ecosystem Workbook Sync**: `python scripts/arcanum workbook sync` (`scripts/lib/workbook_sync.py` & `Master_Writing_Ecosystem.xlsx`)
 - **Obsidian Lite Mode (4 Core Compilers + 5-Plugin Profile)**: `python3 -m scripts.lib.audit_hardening [VAULT]` (`scripts/lib/audit_hardening.py`)
 - **Unified Continuity Suite & Obsidian Bridge**: `python scripts/arcanum continuity-suite [VAULT]` (`scripts/lib/vault_continuity_runner.py`)
 - **Phase-Aware Effort & Career Velocity**: `python scripts/arcanum sprint-effort` (`scripts/lib/phase_effort_engine.py`)
@@ -79,7 +92,12 @@ def _sync_docs_footers(docs_dir: Path) -> None:
     synced = 0
     for md_file in sorted(docs_dir.rglob("*.md")):
         text = md_file.read_text(encoding="utf-8")
-        if CROSS_REF_MARKER not in text and "Phase 1-4" not in text and "Phase 1-5" not in text and "continuity-suite" not in text:
+        if (
+            CROSS_REF_MARKER not in text
+            and "Phase 1-4" not in text
+            and "Phase 1-5" not in text
+            and "continuity-suite" not in text
+        ):
             md_file.write_text(text.rstrip() + "\n" + CROSS_REF_FOOTER, encoding="utf-8")
             synced += 1
     if synced:
@@ -108,11 +126,10 @@ def _prune_git_branches(repo_root: Path) -> None:
 def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
     lib_dir = repo_root / "scripts" / "lib"
-    tests_dir = repo_root / "tests"
 
     _unclutter_repo(repo_root)
-    _sync_docs_footers(repo_root / "docs")
     if "--prepare-release" in sys.argv:
+        _sync_docs_footers(repo_root / "docs")
         _prune_git_branches(repo_root)
 
     missing = [m for m in REQUIRED_MODULES if not (lib_dir / m).exists()]
@@ -126,12 +143,23 @@ def main() -> int:
     extra_pp = f"{repo_root}:{repo_root / 'scripts'}:{lib_dir}"
     env["PYTHONPATH"] = f"{extra_pp}:{existing_pp}" if existing_pp else extra_pp
 
+    # Synchronize Master_Writing_Ecosystem.xlsx if present
+    wb_path = repo_root / "Master_Writing_Ecosystem.xlsx"
+    if wb_path.is_file():
+        sync_res = subprocess.run(  # nosec B603
+            [sys.executable, "-m", "scripts.lib.workbook_sync", "sync", "--workspace", str(repo_root)],
+            cwd=str(repo_root),
+            env=env,
+            check=False,
+        )
+        if sync_res.returncode != 0:
+            return sync_res.returncode
+
     runner_code = (
         "import datetime, enum, typing, unittest, sys; "
         "setattr(datetime, 'UTC', getattr(datetime, 'UTC', datetime.timezone.utc)); "
-        "sys.exit(0 if unittest.TextTestRunner(verbosity=2).run("
-        f"unittest.defaultTestLoader.discover({str(tests_dir)!r}, pattern='test_*.py')"
-        ").wasSuccessful() else 1)"
+        f"suites = unittest.defaultTestLoader.loadTestsFromNames({list(ZERO_PIP_TEST_SUITES)!r}); "
+        "sys.exit(0 if unittest.TextTestRunner(verbosity=2).run(suites).wasSuccessful() else 1)"
     )
     res = subprocess.run(  # nosec B603
         [sys.executable, "-c", runner_code],

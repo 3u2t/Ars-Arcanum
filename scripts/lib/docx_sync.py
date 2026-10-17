@@ -196,7 +196,7 @@ def extract_docx_comments(docx_path: Path) -> list[dict[str, Any]]:
                 if "<!entity" in sample or "<!doctype" in sample:
                     return []
 
-            root = ET.fromstring(comments_xml_bytes)  # nosec B314 # noqa: S314
+            root = ET.fromstring(comments_xml_bytes)  # nosec B314
             ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
             w_tag = f"{{{ns['w']}}}"
             for c in root.iter(f"{w_tag}comment"):
@@ -248,7 +248,7 @@ def convert_docx_to_markdown(docx_path: Path) -> str:
             if "<!entity" in sample or "<!doctype" in sample:
                 raise ValueError("Unsafe DOCTYPE/ENTITY and Unsafe XML entity declaration detected in DOCX document.xml")
 
-        root = ET.fromstring(doc_xml_bytes)  # nosec B314 # noqa: S314
+        root = ET.fromstring(doc_xml_bytes)  # nosec B314
         ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
         md_paragraphs = []

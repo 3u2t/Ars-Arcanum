@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, dataclass
+from itertools import pairwise
 import json
 from pathlib import Path
 import re
@@ -19,15 +20,27 @@ import xml.etree.ElementTree as ET  # nosec B405
 import zipfile
 
 
-@dataclass(frozen=True)
-class ConlangLexeme:
-    """Single word entry in a constructed language lexicon."""
+try:
+    from src.arcanum.worldbible.conlang import ConlangLexeme, render_etymology_tree_svg
+except ImportError:
+    @dataclass(frozen=True)
+    class ConlangLexeme:  # type: ignore[no-redef]
+        """Single word entry in a constructed language lexicon."""
 
-    con_word: str
-    local_gloss: str
-    pronunciation: str = ""
-    part_of_speech: str = "noun"
-    etymology: str = ""
+        con_word: str
+        local_gloss: str
+        pronunciation: str = ""
+        part_of_speech: str = "noun"
+        etymology: str = ""
+
+    def render_etymology_tree_svg(  # type: ignore[no-redef]
+        lexemes: list[ConlangLexeme],
+        *,
+        width: int = 800,
+        height: int = 600,
+        theme: str = "dark",
+    ) -> str:
+        return "<svg></svg>"
 
 
 @dataclass(frozen=True)
@@ -153,7 +166,7 @@ def validate_word_phonotactics(word: str, spec: PhonotacticSpec) -> list[Conlang
             )
 
     if not spec.allow_vowel_hiatus:
-        for prev_t, curr_t in zip(tokens, tokens[1:]):
+        for prev_t, curr_t in pairwise(tokens):
             if prev_t in vowel_set and curr_t in vowel_set and prev_t != curr_t:
                 violations.append(
                     ConlangViolation(

@@ -17,6 +17,9 @@ state_delta:
 ---
 <!-- AI-GENERATED EDUCATIONAL NON-COMMERCIAL CREATIVE WORKFLOW TEMPLATE -->
 
+> [!NOTE] ⚠️ EDUCATIONAL TEMPLATE (AI-GENERATED)
+> **Notice**: This template was AI-generated for educational demonstration and craft guidance within the Ars Arcanum operating system. It is strictly non-commercial and provided solely to demonstrate system features, mechanical schemas, and engine capabilities. Authors should replace placeholder values with their original manuscript prose.
+
 @pov: Deuteragonist
 @location: Frontier Outpost
 @subplot: Frontier Mystery
@@ -36,7 +39,7 @@ Four days along the ridge brought the patrol to [[Frontier-Outpost]], where the 
 
 <!-- ARS_ARCANUM_COMPREHENSIVE_CRAFT_AND_ENGINE_SHOWCASE -->
 <details>
-<summary><strong>⚙️ Ars Arcanum Deterministic Engine &amp; Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
+<summary><strong>⚙️ Ars Arcanum Engine Guidance &amp; Deterministic Craft Doctrine Integration Guide (Click to Expand)</strong></summary>
 
 ### How the CLI Compilers &amp; Craft Engines Use This Template
 - **Unified VaultIndex (`arcanum vault-index`)**: Indexes YAML frontmatter (including `|` and `>` multiline block scalars), `@directives`, `[[Wikilinks]]`, multi-paragraph dialogue ratios, and SHA-256 paragraph hashes (`CACHE_VERSION = 3`).

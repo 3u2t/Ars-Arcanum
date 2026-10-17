@@ -287,7 +287,7 @@ def export_markdown_to_docx_hardened(
         tmp_md = target_docx.with_suffix(".sanitized.tmp.md")
         try:
             tmp_md.write_text(safe_text, encoding="utf-8")
-            export_markdown_to_docx(tmp_md, target_docx, author=author)
+            export_markdown_to_docx(safe_text, target_docx, author=author)
             wrote_via_delegate = target_docx.is_file()
         finally:
             tmp_md.unlink(missing_ok=True)
@@ -597,6 +597,11 @@ def build_lite_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Skip writing `_Arcanum_Lite_Dashboard.md` to the vault root.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Return non-zero exit code even in --json mode when findings are present.",
+    )
     return parser
 
 
@@ -630,6 +635,17 @@ def main_lite(argv: Sequence[str] | None = None) -> int:
             f"Findings: {report.total_issues} | "
             f"Dashboard: {report.dashboard_path}"
         )
+    try:
+        from lib.workbook_sync import auto_sync_workbook_if_present
+    except ImportError:
+        try:
+            from workbook_sync import auto_sync_workbook_if_present  # type: ignore[no-redef]
+        except ImportError:
+            auto_sync_workbook_if_present = None  # type: ignore[assignment]
+    if auto_sync_workbook_if_present is not None:
+        auto_sync_workbook_if_present(vault_path)
+    if parsed.as_json and not parsed.strict:
+        return 0
     return 0 if report.total_issues == 0 else 1
 
 

@@ -77,6 +77,9 @@ class EffortMultiplierConfig:
     off_phase_revision_weight: float = 0.00
 
 
+_DEFAULT_EFFORT_CONFIG = EffortMultiplierConfig()
+
+
 @dataclass(frozen=True)
 class SessionEffortBreakdown:
     """Factory-only schema stub retained for backwards compatibility."""
@@ -190,7 +193,7 @@ def evaluate_session_effort(
     revision_words: int = 0,
     minutes_spent: float = 0.0,
     notes: str = "",
-    config: EffortMultiplierConfig = EffortMultiplierConfig(),
+    config: EffortMultiplierConfig = _DEFAULT_EFFORT_CONFIG,
 ) -> EvaluatedSession:
     """Deterministically compute effort points and manuscript progress for a writing session."""
     resolved_stage = ProjectStage(stage) if not isinstance(stage, ProjectStage) else stage
@@ -253,7 +256,7 @@ class PhaseEffortLedger:
     def __init__(
         self,
         workspace_root: Path,
-        config: EffortMultiplierConfig = EffortMultiplierConfig(),
+        config: EffortMultiplierConfig = _DEFAULT_EFFORT_CONFIG,
     ) -> None:
         self.workspace_root = workspace_root.resolve()
         self.config = config
@@ -266,6 +269,15 @@ class PhaseEffortLedger:
         existing = self.ledger_path.read_text(encoding="utf-8") if self.ledger_path.exists() else ""
         line = json.dumps(asdict(session), sort_keys=True) + "\n"
         atomic_write(self.ledger_path, existing + line)
+        try:
+            from lib.workbook_sync import auto_sync_workbook_if_present
+        except ImportError:
+            try:
+                from workbook_sync import auto_sync_workbook_if_present  # type: ignore[no-redef]
+            except ImportError:
+                auto_sync_workbook_if_present = None  # type: ignore[assignment]
+        if auto_sync_workbook_if_present is not None:
+            auto_sync_workbook_if_present(self.workspace_root)
 
     def load_sessions(self) -> list[EvaluatedSession]:
         """Load all logged sessions from `.arcanum/sprint_log.jsonl`."""

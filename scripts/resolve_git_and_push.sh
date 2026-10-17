@@ -42,6 +42,7 @@ rm -f UPGRADE_INSTALL.md scripts/arcanum-lite launchers/arcanum-lite.desktop .gi
 
 echo "=== [4/6] Synchronizing documentation footers & running full verification suite ==="
 python3 scripts/apply_arcanum_upgrade.py --prepare-release
+PYTHONPATH=".:scripts:scripts/lib" python3 -m scripts.lib.workbook_sync sync
 python3 scripts/sync_and_verify_docs.py
 python3 scripts/install_and_verify_samples.py
 python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json --no-dashboard

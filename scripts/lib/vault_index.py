@@ -131,7 +131,7 @@ def parse_frontmatter(markdown_text: str) -> tuple[dict[str, Any], str]:
         key = key_part.strip()
         val_str = val_part.strip()
 
-        if val_str and not (val_str.startswith('"') or val_str.startswith("'")):
+        if val_str and not val_str.startswith(('\"', "'")):
             val_str = re.sub(r"\s+#.*$", "", val_str).strip()
 
         if val_str in ("|", ">", "|-", ">-"):

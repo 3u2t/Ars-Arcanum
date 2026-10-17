@@ -34,11 +34,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Verify Production Modules & Run Unittest Discovery
+      - name: Verify Production Modules, Auto-Sync Workbook & Run Zero-Pip Suites
         run: python3 scripts/apply_arcanum_upgrade.py
+
+      - name: Verify Master Writing Ecosystem Workbook Integrity
+        run: |
+          PYTHONPATH=".:scripts:scripts/lib" python3 -m scripts.lib.workbook_sync status --json
+          PYTHONPATH=".:scripts:scripts/lib" python3 -m scripts.lib.workbook_sync sync --json
 
       - name: Run Lite Mode Continuity Check on Sample Cosmos
         run: |
           if [ -d "templates/demo-cosmos/Eldoria-Cosmos" ]; then
-            python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json --no-dashboard
+            PYTHONPATH=".:scripts:scripts/lib" python3 -m scripts.lib.audit_hardening templates/demo-cosmos/Eldoria-Cosmos --json --no-dashboard
           fi

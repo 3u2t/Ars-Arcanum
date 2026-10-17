@@ -291,7 +291,7 @@ def extract_docx_heading1(docx_path: Path) -> str | None:
             if "word/document.xml" not in zf.namelist():
                 return None
             doc_xml = zf.read("word/document.xml")
-        root = ET.fromstring(doc_xml)  # nosec B314 # noqa: S314
+        root = ET.fromstring(doc_xml)  # nosec B314
         ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
         for p in root.iter(f"{{{ns['w']}}}p"):
             pPr = p.find(f"{{{ns['w']}}}pPr")

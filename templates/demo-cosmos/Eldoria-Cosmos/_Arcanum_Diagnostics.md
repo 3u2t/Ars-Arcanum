@@ -1,6 +1,6 @@
 ---
 title: Ars Arcanum Live Continuity & Effort Dashboard
-updated_at: 2026-10-16 15:55 UTC
+updated_at: 2026-10-16 16:34 UTC
 status: ACTION REQUIRED
 ---
 

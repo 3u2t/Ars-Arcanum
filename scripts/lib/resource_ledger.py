@@ -145,18 +145,22 @@ def audit_resource_conservation(
     }
 
 
-def audit_vault_resources(vault_root: Path) -> dict[str, Any]:
+def audit_vault_resources(vault_root: Path, *, world_root: Path | None = None) -> dict[str, Any]:
     """Automatically scan `Characters/`, `Magic-Technology/`, `Artifacts/`, and chapter `state_delta` blocks."""
+    all_nodes = []
+    if world_root is not None:
+        world_index = VaultIndex(world_root)
+        all_nodes.extend(world_index.scan_vault())
     index = VaultIndex(vault_root)
-    nodes = index.scan_vault()
+    all_nodes.extend(index.scan_vault())
 
     pools: list[ResourcePoolSpec] = []
     deltas: list[ChapterResourceDelta] = []
 
-    for idx_num, node in enumerate(nodes, start=1):
+    for idx_num, node in enumerate(all_nodes, start=1):
         fm = node.frontmatter
         rel = node.relative_path
-        entity = str(fm.get("entity") or fm.get("pov") or node.directives.get("pov") or Path(rel).stem)
+        entity = str(fm.get("entity") or fm.get("name") or fm.get("pov") or node.directives.get("pov") or Path(rel).stem.replace("-", " "))
 
         if isinstance(fm.get("resource_pools"), dict):
             for res_name, init_val in fm["resource_pools"].items():

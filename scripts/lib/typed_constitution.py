@@ -122,7 +122,10 @@ def resolve_constitution_cascade(
     ):
         if not layer:
             continue
-        scope_name = str(layer.get("scope_name", tier_name))
+        if "scope_name" in layer and layer["scope_name"]:
+            scope_name = str(layer["scope_name"])
+        elif scope_name == base.scope_name:
+            scope_name = tier_name
         if "sovereign_offline_only" in layer:
             sovereign_offline = bool(layer["sovereign_offline_only"])
         if "allow_generative_ai" in layer:

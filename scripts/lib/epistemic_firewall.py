@@ -182,10 +182,16 @@ def _as_str_tuple(raw: Any) -> tuple[str, ...]:
     return ()
 
 
-def audit_vault_epistemic(vault_root: Path) -> EpistemicAuditReport:
+def audit_vault_epistemic(vault_root: Path, *, world_root: Path | None = None) -> EpistemicAuditReport:
     """Automatically scan a Sovereign Vault via `VaultIndex` and run the Epistemic POV Firewall."""
     index = VaultIndex(vault_root)
     nodes = index.scan_vault()
+
+    # If a shared universe world_root is provided, federate character baselines from it
+    if world_root is not None:
+        world_index = VaultIndex(world_root)
+        world_nodes = world_index.scan_vault()
+        nodes = list(nodes) + list(world_nodes)
 
     characters: list[CharacterKnowledgeBaseline] = []
     chapters: list[ChapterEpistemicEvent] = []

@@ -27,7 +27,7 @@ except ImportError:
         import xml.etree.ElementTree as ET
 
         def parse_xml_safe_bytes(xml_bytes: bytes) -> ET.Element:
-            return ET.fromstring(xml_bytes)  # nosec B314 # noqa: S314
+            return ET.fromstring(xml_bytes)  # nosec B314
 
         def validate_safe_zip_archive(path: Path) -> None:
             pass

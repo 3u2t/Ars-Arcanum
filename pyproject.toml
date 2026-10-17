@@ -27,7 +27,6 @@ ignore = [
     "E501", # line length handled separately
     "I001", # import sort style across standalone/package dual-import modules
     "UP007", # X | Y vs Optional
-    "UP038", # isinstance tuple vs union syntax across 3.10-3.12
     "S314", # xml.etree.ElementTree guarded by parse_xml_safe_bytes / local vault schemas
     "S603", # subprocess call - check for execution of untrusted input
     "S607", # start_process with partial path
@@ -82,3 +81,8 @@ exclude_lines = [
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "scripts"]
+testpaths = ["tests"]
+

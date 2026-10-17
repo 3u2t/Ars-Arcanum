@@ -71,3 +71,11 @@ python scripts/arcanum backup --tag milestone-1
 | [Modernization Plan (`docs/MODERNIZATION_PLAN.md`)](docs/MODERNIZATION_PLAN.md) | Phases 1-5 architectural refactoring and continuity compiler specifications |
 | [Agentic Manifesto (`AGENTS.md`)](AGENTS.md) | Invariant engineering contracts, security guarantees, and momentum queues |
 | [Threat Model (`docs/THREAT_MODEL.md`)](docs/THREAT_MODEL.md) | STRIDE-Lite security analysis, subprocess sandboxing, and CSP enforcement |
+
+### 📊 Live Master Writing Ecosystem Workbook (`Master_Writing_Ecosystem.xlsx`)
+
+Ars Arcanum includes a live, auto-updating **8-sheet, 15-chart Excel command center** (`Master_Writing_Ecosystem.xlsx` in the repository root and `templates/ecosystem/Master_Writing_Ecosystem.xlsx`) powered by the zero-pip OpenXML synchronizer (`scripts/lib/workbook_sync.py`):
+
+- **8 Integrated Sheets**: `Dashboard`, `Config`, `Universes & Series`, `My Books`, `Daily Writing Log`, `Calc`, `Continuity & Compilers`, and `World Bible & Lore`.
+- **15 Dynamic Auto-Updating Charts**: Tracks 30-day velocity, daily effort rings, active book spotlight pacing, multi-year production load, series architecture, stage funnels, creative phase mix, weekly rhythm, **deterministic compiler health (`EPI-*`, `TIME-*`, `CON-*`, `LED-*`, `BRD-*`, churn, scraps)**, and **World Bible entity distribution & backlink density**.
+- **Automatic Project Hooks**: Logging a sprint (`arcanum sprint-effort`), running the continuity suite (`arcanum continuity-suite`), or running `python scripts/arcanum workbook sync` (`./scripts/sync_workbook.sh`) automatically populates and updates the workbook.

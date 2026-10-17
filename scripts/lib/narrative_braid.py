@@ -113,10 +113,16 @@ def render_braid_html(
     output_html: Path | None = None,
     *,
     max_drought_words: int = 25_000,
+    sort_by: str = "manuscript",
 ) -> str:
     """Render an offline, CSP-locked HTML + SVG swimlane braid matrix."""
     report = analyze_narrative_braid(chapters, max_drought_words=max_drought_words)
-    ordered = sorted(chapters, key=lambda c: c.chapter_index)
+    if sort_by == "tension":
+        ordered = sorted(chapters, key=lambda c: (-c.tension_score, c.chapter_index))
+    elif sort_by == "pov":
+        ordered = sorted(chapters, key=lambda c: (c.pov_character, c.chapter_index))
+    else:
+        ordered = sorted(chapters, key=lambda c: c.chapter_index)
     pov_list = list(report["pov_word_totals"].keys())
 
     svg_width = max(640, 140 + len(ordered) * 70)

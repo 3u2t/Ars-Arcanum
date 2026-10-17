@@ -14,9 +14,12 @@ import threading
 import webbrowser
 
 try:
-    from src.arcanum.server.handlers import ArcanumStudioHandler
-except ImportError:
-    from arcanum.server.handlers import ArcanumStudioHandler
+    from .handlers import ArcanumStudioHandler
+except (ImportError, ValueError):
+    try:
+        from src.arcanum.server.handlers import ArcanumStudioHandler
+    except ImportError:
+        from arcanum.server.handlers import ArcanumStudioHandler
 
 
 def create_studio_server(

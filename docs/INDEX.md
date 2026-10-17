@@ -47,3 +47,4 @@ Read these documents when contributing code, auditing parsers, or extending the 
 - **Multi-POV Narrative Braid & Droughts**: `python scripts/arcanum braid [MANUSCRIPT]` (`scripts/lib/narrative_braid.py`)
 - **Fast SHA-256 Paragraph Diff & Scraps**: `python scripts/arcanum diff-fast OLD.md NEW.md` (`scripts/lib/diff_core.py`)
 - **Bidirectional Word Tracked Changes Sync**: `python scripts/arcanum docx-tracked` (`scripts/lib/docx_tracked_changes.py`)
+- [Master Writing Ecosystem Workbook & Auto-Sync (`WORKBOOK_SYNC.md`)](WORKBOOK_SYNC.md)

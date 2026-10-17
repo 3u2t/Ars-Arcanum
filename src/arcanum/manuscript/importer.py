@@ -280,7 +280,7 @@ class EpubImporter:
 
             if b"<!DOCTYPE" in container_data or b"<!ENTITY" in container_data:
                 raise ValueError("Unsafe XML DOCTYPE/ENTITY detected in container.xml")
-            container_root = ET.fromstring(container_data)  # nosec B314 # noqa: S314
+            container_root = ET.fromstring(container_data)  # nosec B314
             rootfile = container_root.find(".//{urn:oasis:names:tc:opendocument:xmlns:container}rootfile")
             if rootfile is None or not rootfile.attrib.get("full-path"):
                 raise ValueError("EPUB container.xml missing rootfile full-path")
@@ -292,7 +292,7 @@ class EpubImporter:
             opf_data = zf.read(opf_path)
             if b"<!DOCTYPE" in opf_data or b"<!ENTITY" in opf_data:
                 raise ValueError("Unsafe XML DOCTYPE/ENTITY detected in OPF manifest")
-            opf_root = ET.fromstring(opf_data)  # nosec B314 # noqa: S314
+            opf_root = ET.fromstring(opf_data)  # nosec B314
 
             # Metadata extraction
             title = "Imported EPUB"
@@ -364,7 +364,7 @@ class ScrivenerImporter:
         scrivx_bytes = scrivx_path.read_bytes()
         if b"<!DOCTYPE" in scrivx_bytes or b"<!ENTITY" in scrivx_bytes:
             raise ValueError("Unsafe XML DOCTYPE/ENTITY detected in Scrivener project.scrivx")
-        root = ET.fromstring(scrivx_bytes)  # nosec B314 # noqa: S314
+        root = ET.fromstring(scrivx_bytes)  # nosec B314
 
         title = root.findtext(".//ProjectTitle") or self.scriv_path.stem
         author = "Author"

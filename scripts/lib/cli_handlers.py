@@ -235,6 +235,10 @@ DISPATCH_TABLE: dict[str, tuple[str, ...]] = {
     "lite-check": ("module", "lib.audit_hardening"),
     "arcanum-lite": ("module", "lib.audit_hardening"),
     "obsidian-dashboard": ("module", "lib.vault_continuity_runner"),
+    "workbook": ("module", "lib.workbook_sync"),
+    "workbook-sync": ("module", "lib.workbook_sync"),
+    "tracker": ("module", "lib.workbook_sync"),
+    "excel": ("module", "lib.workbook_sync"),
     # --- Standalone Python/Shell Scripts ---
     "query": ("script", "init_query.py"),
     "synopsis": ("script", "init_query.py"),

@@ -24,19 +24,28 @@ try:
     from lib.phase_effort_engine import PhaseEffortLedger
     from lib.resource_ledger import audit_vault_resources
     from lib.timeline_solver import audit_vault_timeline
-    from lib.vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath
+    from lib.typed_constitution import (
+        load_yaml_constitution_file,
+        resolve_constitution_cascade,
+    )
+    from lib.vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath, parse_frontmatter
 except ImportError:
     from epistemic_firewall import audit_vault_epistemic
     from narrative_braid import analyze_narrative_braid, scan_manuscript_braid
     from phase_effort_engine import PhaseEffortLedger
     from resource_ledger import audit_vault_resources
     from timeline_solver import audit_vault_timeline
-    from vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath
+    from typed_constitution import (
+        load_yaml_constitution_file,
+        resolve_constitution_cascade,
+    )
+    from vault_index import PathSecurityError, VaultIndex, atomic_write, is_safe_subpath, parse_frontmatter
 
 
 def run_full_vault_continuity_suite(
     vault_root: Path,
     *,
+    world_root: Path | None = None,
     write_obsidian_dashboard: bool = True,
     dashboard_filename: str = "_Arcanum_Diagnostics.md",
 ) -> dict[str, Any]:
@@ -44,18 +53,95 @@ def run_full_vault_continuity_suite(
     Obsidian callout dashboard note.
     """
     resolved_root = vault_root.resolve()
+    resolved_world_root: Path | None = None
+    if world_root is not None:
+        cand_dir = Path(world_root).resolve()
+        if cand_dir.is_dir():
+            resolved_world_root = cand_dir
+    else:
+        ms_yaml = resolved_root / "manuscript.yaml"
+        if not ms_yaml.is_file() and (resolved_root.parent / "manuscript.yaml").is_file():
+            ms_yaml = resolved_root.parent / "manuscript.yaml"
+
+        if ms_yaml.is_file():
+            try:
+                ms_raw = ms_yaml.read_text(encoding="utf-8")
+                wrapped = ms_raw if ms_raw.lstrip().startswith("---") else f"---\n{ms_raw}\n---\n"
+                ms_meta, _ = parse_frontmatter(wrapped)
+                uni_path_str = ms_meta.get("universe") or ms_meta.get("world_bible") or ms_meta.get("series_bible")
+                if uni_path_str:
+                    cand = (ms_yaml.parent / str(uni_path_str)).resolve()
+                    if not cand.is_dir():
+                        cand = (resolved_root / str(uni_path_str)).resolve()
+                    if cand.is_dir():
+                        resolved_world_root = cand
+            except Exception:
+                pass
+
     index = VaultIndex(resolved_root)
     nodes = index.scan_vault()
 
-    epistemic_report = audit_vault_epistemic(resolved_root).to_dict()
-    timeline_report = audit_vault_timeline(resolved_root)
-    ledger_report = audit_vault_resources(resolved_root)
+    epistemic_report = audit_vault_epistemic(resolved_root, world_root=resolved_world_root).to_dict()
+    timeline_report = audit_vault_timeline(resolved_root, world_root=resolved_world_root)
+    ledger_report = audit_vault_resources(resolved_root, world_root=resolved_world_root)
     braid_nodes = scan_manuscript_braid(resolved_root)
     braid_report = analyze_narrative_braid(braid_nodes)
 
     effort_ledger = PhaseEffortLedger(resolved_root)
     sessions = effort_ledger.load_sessions()
     total_effort_points = round(sum(s.effort_points for s in sessions), 2)
+
+    constitution_path = None
+    for cand_file in (
+        resolved_root / "constitution.yaml",
+        resolved_root / "constitution.json",
+        resolved_root.parent / "constitution.yaml",
+        resolved_root.parent / "manuscript.yaml",
+        resolved_root / "manuscript.yaml",
+    ):
+        if cand_file.is_file():
+            constitution_path = cand_file
+            break
+
+    const_dict = load_yaml_constitution_file(constitution_path) if constitution_path else None
+
+    world_dict = None
+    if resolved_world_root:
+        for cand_w in (
+            resolved_world_root / "constitution.yaml",
+            resolved_world_root / "constitution.json",
+            resolved_world_root / "world.yaml",
+            resolved_world_root / ".arcanum" / "constitution.yaml",
+        ):
+            if cand_w.is_file():
+                world_dict = load_yaml_constitution_file(cand_w)
+                break
+
+    constitution = resolve_constitution_cascade(world_dict=world_dict, manuscript_dict=const_dict)
+
+    if "violations" in epistemic_report:
+        epistemic_report["violations"] = [
+            v for v in epistemic_report["violations"]
+            if constitution.is_rule_enabled(str(v.get("rule_id", "EPI-201")))
+        ]
+        epistemic_report["passed"] = len(epistemic_report["violations"]) == 0
+
+    if "anomalies" in timeline_report:
+        timeline_report["anomalies"] = [
+            a for a in timeline_report["anomalies"]
+            if constitution.is_rule_enabled(str(a.get("rule_id", "TIME-301")))
+        ]
+        timeline_report["passed"] = len(timeline_report["anomalies"]) == 0
+
+    if "violations" in ledger_report:
+        ledger_report["violations"] = [
+            lv for lv in ledger_report["violations"]
+            if constitution.is_rule_enabled(str(lv.get("rule_id", "LED-501")))
+        ]
+        ledger_report["passed"] = len(ledger_report["violations"]) == 0
+
+    if "drought_alerts" in braid_report and not constitution.is_rule_enabled("BRD-601"):
+        braid_report["drought_alerts"] = []
 
     all_passed = bool(
         epistemic_report["passed"]
@@ -66,6 +152,8 @@ def run_full_vault_continuity_suite(
 
     consolidated: dict[str, Any] = {
         "vault_root": str(resolved_root),
+        "world_root": str(resolved_world_root) if resolved_world_root else None,
+        "constitution": constitution.to_dict(),
         "passed": all_passed,
         "documents_indexed": len(nodes),
         "total_words": sum(n.metrics.total_words for n in nodes),
@@ -84,6 +172,18 @@ def run_full_vault_continuity_suite(
         markdown_callout = render_obsidian_diagnostics_markdown(consolidated)
         atomic_write(dash_path, markdown_callout)
         consolidated["obsidian_dashboard"] = str(dash_path)
+
+    try:
+        from lib.workbook_sync import auto_sync_workbook_if_present
+    except ImportError:
+        try:
+            from workbook_sync import auto_sync_workbook_if_present  # type: ignore[no-redef]
+        except ImportError:
+            auto_sync_workbook_if_present = None  # type: ignore[assignment]
+    if auto_sync_workbook_if_present is not None:
+        wb_res = auto_sync_workbook_if_present(resolved_root)
+        if wb_res is not None:
+            consolidated["workbook_synced"] = wb_res.workbook_path
 
     return consolidated
 
@@ -110,9 +210,12 @@ def render_obsidian_diagnostics_markdown(suite_result: dict[str, Any]) -> str:
         f"> **Documents Indexed**: `{suite_result['documents_indexed']}` | "
         f"**Total Vault Words**: `{suite_result['total_words']:,}` | "
         f"**Cumulative Effort Points**: `{suite_result['cumulative_effort_points']:,.1f}`",
-        "",
-        "## 1. Epistemic POV & Spoiler Firewall (`EPI-*`)",
     ]
+
+    if suite_result.get("world_root"):
+        lines.append(f"> 🌌 **Federated Series Universe**: `{Path(suite_result['world_root']).name}`")
+
+    lines.extend(["", "## 1. Epistemic POV & Spoiler Firewall (`EPI-*`)"])
 
     if not epi_violations:
         lines.append("- No POV spoiler leaks or epistemic breaches detected.")
@@ -151,6 +254,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Run all deterministic continuity compilers and update the Obsidian diagnostics note.",
     )
     parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault or manuscript root")
+    parser.add_argument("--world", "--universe", type=Path, default=None, help="World bible / universe root")
     parser.add_argument(
         "--no-obsidian-dashboard",
         action="store_true",
@@ -160,6 +264,7 @@ def main(argv: list[str] | None = None) -> int:
 
     res = run_full_vault_continuity_suite(
         args.vault,
+        world_root=args.world,
         write_obsidian_dashboard=not args.no_obsidian_dashboard,
     )
     sys.stdout.write(json.dumps(res, indent=2) + "\n")

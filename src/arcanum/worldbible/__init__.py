@@ -6,7 +6,7 @@ from scripts.lib.audit_hardening import (
     import_polyglot_lexicon_hardened,
     run_lite_continuity_check,
 )
-from scripts.lib.conlang_linter import (
+from src.arcanum.worldbible.conlang import (
     ConlangLexeme,
     PhonotacticSpec,
     audit_conlang_terms,
@@ -25,7 +25,7 @@ from scripts.lib.resource_ledger import (
     audit_resource_conservation,
     audit_vault_resources,
 )
-from scripts.lib.timeline_solver import (
+from src.arcanum.worldbible.timeline import (
     CharacterTimelineEvent,
     CustomCalendarSpec,
     RouteEdge,
@@ -36,6 +36,13 @@ from scripts.lib.timeline_solver import (
 from scripts.lib.vault_continuity_runner import (
     render_obsidian_diagnostics_markdown,
     run_full_vault_continuity_suite,
+)
+from src.arcanum.worldbible.visualizers import (
+    export_etymology_tree_html,
+    export_orbital_calendar_html,
+    render_etymology_tree_svg,
+    render_orbital_calendar_svg,
+    wrap_svg_in_standalone_html,
 )
 
 __all__ = [
@@ -57,9 +64,14 @@ __all__ = [
     "audit_vault_timeline",
     "compile_glossary_markdown",
     "compute_relativistic_proper_days",
+    "export_etymology_tree_html",
+    "export_orbital_calendar_html",
     "import_polyglot_lexicon",
     "import_polyglot_lexicon_hardened",
+    "render_etymology_tree_svg",
     "render_obsidian_diagnostics_markdown",
+    "render_orbital_calendar_svg",
     "run_full_vault_continuity_suite",
     "run_lite_continuity_check",
+    "wrap_svg_in_standalone_html",
 ]

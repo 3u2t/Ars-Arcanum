@@ -12,36 +12,68 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from lib.config_store import (
-    get_config_path,
-    load_config,
-    save_config,
-)
-from lib.constitution import (
-    deep_merge_constitution,
-    get_disabled_engines,
-    get_suppressed_rules,
-    is_rule_suppressed,
-    load_authorial_constitution,
-    set_engine_enabled,
-)
-from lib.docx_presets import (
-    get_docx_config,
-    get_docx_preset_names,
-)
-from lib.state import (
-    clear_active_manuscript,
-    clear_active_universe,
-    clear_active_world,
-    get_active_manuscript,
-    get_active_universe,
-    get_active_world,
-    get_daily_flow_state,
-    set_active_manuscript,
-    set_active_universe,
-    set_active_world,
-    set_daily_flow_state,
-)
+try:
+    from scripts.lib.config_store import (
+        get_config_path,
+        load_config,
+        save_config,
+    )
+    from scripts.lib.constitution import (
+        deep_merge_constitution,
+        get_disabled_engines,
+        get_suppressed_rules,
+        is_rule_suppressed,
+        load_authorial_constitution,
+        set_engine_enabled,
+    )
+    from scripts.lib.docx_presets import (
+        get_docx_config,
+        get_docx_preset_names,
+    )
+    from scripts.lib.state import (
+        clear_active_manuscript,
+        clear_active_universe,
+        clear_active_world,
+        get_active_manuscript,
+        get_active_universe,
+        get_active_world,
+        get_daily_flow_state,
+        set_active_manuscript,
+        set_active_universe,
+        set_active_world,
+        set_daily_flow_state,
+    )
+except ImportError:
+    from lib.config_store import (  # type: ignore[no-redef]
+        get_config_path,
+        load_config,
+        save_config,
+    )
+    from lib.constitution import (  # type: ignore[no-redef]
+        deep_merge_constitution,
+        get_disabled_engines,
+        get_suppressed_rules,
+        is_rule_suppressed,
+        load_authorial_constitution,
+        set_engine_enabled,
+    )
+    from lib.docx_presets import (  # type: ignore[no-redef]
+        get_docx_config,
+        get_docx_preset_names,
+    )
+    from lib.state import (  # type: ignore[no-redef]
+        clear_active_manuscript,
+        clear_active_universe,
+        clear_active_world,
+        get_active_manuscript,
+        get_active_universe,
+        get_active_world,
+        get_daily_flow_state,
+        set_active_manuscript,
+        set_active_universe,
+        set_active_world,
+        set_daily_flow_state,
+    )
 
 
 class TestConstitutionModular(unittest.TestCase):
